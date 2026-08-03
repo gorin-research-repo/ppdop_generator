@@ -1,0 +1,12 @@
+{
+  "name": "ppdop-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Generate and edit Delineation of Privileges (DOP) forms for Peakpoint Central Nassau Surgery Center",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "npm run build && python3 -m http.server 8080",
+    "test": "npm run build --silent && node --test"
+  }
+}

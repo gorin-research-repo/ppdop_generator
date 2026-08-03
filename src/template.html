@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PPDOP Generator — AugmentedMD</title>
+  <style>
+/* {{CSS}} */
+  </style>
+</head>
+<body>
+  <div class="brand-bar"></div>
+  <header class="header">
+    <div class="brand"><span>PPDOP Generator</span><span class="shield">&#10003;</span></div>
+  </header>
+  <main>
+    <section class="hero no-print">
+      <div class="eyebrow">Credentialing · Peakpoint Central Nassau</div>
+      <h1>Build delineation of privileges forms <em>in the browser.</em></h1>
+      <p class="sub">Paste a privilege source file, generate an interactive DOP form with PeakPoint branding, then print or save as PDF. Nothing leaves this device.</p>
+    </section>
+
+    <section class="workspace no-print">
+      <div class="panel">
+        <div class="panel-head">
+          <div><span class="step">1</span><h2>Privilege source</h2></div>
+          <button class="link" id="clear" type="button">Clear</button>
+        </div>
+        <textarea id="source" spellcheck="false" placeholder="SPECIALTY: Urology&#10;VERSION: August 2026&#10;&#10;SECTION: Core privileges&#10;QUALIFICATIONS&#10;New Privilege: ...&#10;Renewal of Privilege: ...&#10;&#10;PRIVILEGES&#10;Cystoscopy&#10;Ureteroscopy"></textarea>
+        <div class="panel-foot">
+          <span id="summary">Paste a privilege list, then generate.</span>
+          <label>Facility <input id="organization" type="text" value="Peakpoint Central Nassau Surgery Center"></label>
+        </div>
+      </div>
+    </section>
+
+    <div class="action-bar no-print">
+      <button class="scrub" id="generate" type="button">Generate form</button>
+      <label class="scrub secondary file-btn">Load .txt<input id="file" type="file" accept=".txt,text/plain"></label>
+      <button class="link" id="example" type="button">Try an example</button>
+      <button class="scrub secondary" id="print" type="button" disabled>Print / Save PDF</button>
+      <span class="shortcut">Ctrl / &#8984; + Enter</span>
+    </div>
+
+    <section class="panel preview-shell">
+      <div class="panel-head no-print">
+        <div><span class="step">2</span><h2>DOP preview</h2></div>
+      </div>
+      <div id="preview"><div class="empty-preview">Your DOP form will appear here.</div></div>
+    </section>
+
+    <aside class="notice no-print">
+      <strong>Same source format as the Python generator.</strong>
+      Use <code>SECTION</code>, <code>QUALIFICATIONS</code>, <code>SUBGROUP</code>, <code>SPECIALTY</code>, and <code>VERSION</code> markers.
+      Privilege rows include Newly Requested, Currently Held, and Granted / Renewed checkboxes. Use your browser&rsquo;s print dialog to produce a PDF.
+    </aside>
+  </main>
+  <footer class="site-footer no-print"><span>Tool by @michael_gorin / @AugmentedMD</span></footer>
+  <script type="module">
+/* {{SCRIPT}} */
+  </script>
+</body>
+</html>

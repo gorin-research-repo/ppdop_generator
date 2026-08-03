@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PPDOP Generator — AugmentedMD</title>
+  <style>
+:root{
+  --blue:#2055A1;
+  --navy:#15306B;
+  --teal:#06ABEB;
+  --text:#33475A;
+  --ink:#1F1F38;
+  --card:#EEF4FB;
+  --border:#C9D9EC;
+  --white:#FFFFFF;
+  --muted:#5C707A;
+  --amber:#B77800;
+  --amber-bg:#FBF1DF;
+  --brand-gradient:linear-gradient(90deg,#15306B 0%,#2A6FC0 55%,#06ABEB 100%);
+  --font-sans:"Helvetica Neue",Arial,system-ui,sans-serif;
+  --font-mono:"Courier New",ui-monospace,monospace;
+  --radius-card:12px;
+  --radius-btn:10px;
+  --radius-pill:999px;
+  --shadow-card:0 12px 30px rgba(27,42,74,.10);
+  /* PeakPoint form palette (from credentialing_pdf.py) */
+  --pp-green:#268B6B;
+  --pp-grey:#495566;
+  --pp-stroke:#8C8C8C;
+  --pp-header:#E8E8E8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:var(--font-sans);
+  font-size:16px;
+  line-height:1.5;
+  background-color:var(--white);
+  background-image:radial-gradient(#E4E9F2 1px,transparent 1px);
+  background-size:18px 18px;
+}
+h1,h2,h3{color:var(--blue);font-weight:700}
+button,textarea,select,input{font-family:inherit;font-size:inherit}
+.brand-bar{height:8px;background:var(--brand-gradient)}
+.header{height:76px;padding:0 max(24px,5vw);border-bottom:1px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:flex-end}
+.brand{display:flex;align-items:center;gap:12px;color:var(--blue);font-size:18px;font-weight:700}
+.shield{display:grid;place-items:center;width:36px;height:36px;border-radius:var(--radius-btn);color:var(--white);background:var(--blue)}
+main{width:min(1140px,calc(100% - 40px));margin:auto}
+.hero{max-width:820px;margin:64px auto;text-align:center}
+.eyebrow{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{margin:16px 0;font-size:clamp(34px,4vw,40px);line-height:1.15}
+.hero h1 em{color:var(--navy);font-style:normal}
+.sub{max-width:640px;margin:auto;font-size:17px}
+.workspace{display:grid;gap:24px;margin-bottom:32px}
+.panel{min-width:0;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--white);box-shadow:var(--shadow-card)}
+.panel-head,.panel-foot{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.panel-head{border-bottom:1px solid var(--border)}
+.panel-head div{display:flex;align-items:center;gap:12px}
+.panel-head h2{margin:0;font-size:18px}
+.step{display:grid;place-items:center;width:26px;height:26px;border-radius:var(--radius-pill);color:var(--white);background:var(--blue);font-size:13px;font-weight:700}
+.link{padding:4px;border:0;color:var(--blue);background:none;font-size:14px;font-weight:700;cursor:pointer}
+.link:hover:enabled{text-decoration:underline}
+.link:disabled{color:var(--muted);cursor:default}
+textarea{
+  display:block;width:100%;height:280px;padding:24px;border:0;outline:0;resize:vertical;
+  color:var(--ink);background:var(--white);font-family:var(--font-mono);font-size:13px;line-height:1.6
+}
+textarea::placeholder{color:var(--muted)}
+.panel-foot{min-height:60px;border-top:1px solid var(--border);background:var(--card);color:var(--muted);font-size:13px}
+.panel-foot label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel-foot input[type=text]{
+  min-width:220px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;color:var(--ink);background:var(--white)
+}
+.action-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:8px 0 24px}
+.scrub{
+  padding:12px 20px;border:0;border-radius:var(--radius-btn);color:var(--white);background:var(--blue);
+  font-size:15px;font-weight:700;white-space:nowrap;cursor:pointer
+}
+.scrub:hover{background:var(--navy)}
+.scrub.secondary{background:var(--white);color:var(--blue);border:1px solid var(--border)}
+.scrub.secondary:hover{background:var(--card)}
+.scrub:disabled{opacity:.45;cursor:default}
+.shortcut{color:var(--muted);font-size:12px}
+.file-btn{position:relative;overflow:hidden}
+.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.preview-shell{padding:0;background:#F7F8FA}
+.preview-shell .panel-head{background:var(--white)}
+#preview{padding:24px;min-height:320px}
+.empty-preview{
+  display:grid;place-items:center;min-height:280px;color:var(--muted);text-align:center;font-size:15px;
+  border:1px dashed var(--border);border-radius:10px;background:var(--white)
+}
+.notice{margin:48px 0 64px;padding:20px 24px;border:1px solid #EBDCC0;border-radius:var(--radius-card);color:var(--text);background:var(--amber-bg);font-size:14px}
+.notice strong{color:var(--amber)}
+.site-footer{padding:28px max(24px,5vw);color:#C7D4EA;background:var(--navy);display:flex;justify-content:center;text-align:center;font-size:13px}
+
+/* ── PeakPoint DOP document ─────────────────────────────────────────────── */
+.dop-document{
+  background:var(--white);color:#111;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.35;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden
+}
+.dop-page{padding:28px 32px;border-bottom:1px dashed #D0D5DD}
+.cover-org{text-align:center;color:#333;font-size:12px;margin-bottom:8px}
+.specialty-name{margin:0;text-align:center;color:var(--pp-green);font-size:22px;font-weight:700}
+.dop-label{margin:6px 0 24px;text-align:center;font-size:14px;color:#111}
+.applicant-box{border:1.5px solid #111;border-radius:2px;padding:12px 16px 16px;margin-bottom:20px}
+.applicant-box h2{margin:0 0 12px;color:#111;font-size:13px;font-weight:700}
+.applicant-box label{display:grid;grid-template-columns:minmax(140px,180px) 1fr;gap:8px;align-items:center;margin:6px 0}
+.applicant-box span{font-size:12px}
+.applicant-box input{
+  border:0;border-bottom:1px solid #999;border-radius:0;padding:4px 2px;background:transparent;outline:0;width:100%
+}
+.instructions strong{display:block;margin-bottom:6px}
+.instructions p{margin:0;text-align:justify}
+.dop-section{margin:0;border:1.5px solid #111;border-radius:2px;overflow:hidden;margin:20px 24px}
+.section-title{background:var(--pp-green);color:#fff;font-weight:700;font-size:12px;padding:8px 12px}
+.qual-bar{background:var(--pp-grey);color:#fff;font-weight:700;font-size:12px;padding:7px 12px}
+.qual-row{display:grid;grid-template-columns:22.5% 1fr;border-top:1px solid var(--pp-stroke);min-height:28px}
+.qual-label,.qual-value{padding:6px 10px;font-size:11px}
+.qual-label{border-right:1px solid var(--pp-stroke);font-weight:600}
+.priv-row{
+  display:grid;grid-template-columns:70% 10% 10% 10%;border-top:1px solid var(--pp-stroke);
+  align-items:stretch;min-height:30px;background:#fff
+}
+.priv-row.priv-header{background:var(--pp-header);font-weight:700;font-size:10px;text-align:center}
+.priv-row.priv-header .priv-text{text-align:left;padding-left:12px}
+.priv-text{padding:7px 12px;font-size:11px;border-right:1px solid var(--pp-stroke);display:flex;align-items:center}
+.priv-text.indented{padding-left:28px}
+.priv-cb{
+  display:flex;align-items:center;justify-content:center;padding:4px 2px;border-right:1px solid var(--pp-stroke);
+  font-size:9px;line-height:1.2;text-align:center
+}
+.priv-cb.granted{border-right:0;border-left:1.5px solid #111}
+.priv-cb input{width:14px;height:14px;accent-color:var(--pp-green);cursor:pointer}
+.priv-row.subgroup .priv-text{font-weight:700}
+.ack-box{margin:24px;border:1.5px solid #111;overflow:hidden;border-radius:2px}
+.ack-header{background:var(--pp-grey);color:#fff;font-weight:700;font-size:12px;padding:8px 12px}
+.ack-body{padding:12px 14px 16px;font-size:11px}
+.ack-body p{margin:0 0 10px}
+.ack-item{display:grid;grid-template-columns:24px 1fr;gap:4px;margin:4px 0}
+.ack-letter{font-weight:600}
+.sig-row{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:28px}
+.sig-line{border-bottom:1px solid #111;height:28px}
+.sig-label{text-align:center;margin-top:4px;font-size:10px}
+.med-dir-name{margin:16px 0 8px !important;font-weight:600}
+.denied-title{margin:24px 0 8px !important;font-weight:600}
+.denied-line{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:end;margin:10px 0}
+.denied-line div{border-bottom:1px solid #111;min-height:16px}
+.dop-footer{
+  display:flex;justify-content:space-between;gap:16px;padding:10px 24px;color:#666;font-size:10px;
+  border-top:1px solid var(--border);background:#FAFBFC
+}
+.med-dir-page{border-bottom:0}
+
+@media(max-width:900px){
+  .priv-row,.qual-row{grid-template-columns:1fr}
+  .priv-text,.qual-label{border-right:0;border-bottom:1px solid var(--pp-stroke)}
+  .priv-cb.granted{border-left:0}
+  .applicant-box label{grid-template-columns:1fr}
+  .sig-row{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  main{width:calc(100% - 32px)}
+  .header{height:64px;padding:0 16px}
+  .hero{margin:48px auto}
+  textarea{height:240px}
+  .dop-section,.ack-box{margin-left:8px;margin-right:8px}
+  .dop-page{padding:20px 12px}
+}
+
+@media print{
+  body{background:#fff !important;background-image:none !important}
+  .brand-bar,.header,.hero,.workspace,.action-bar,.notice,.site-footer,.no-print{display:none !important}
+  main{width:100%;margin:0}
+  .preview-shell{border:0;box-shadow:none;border-radius:0}
+  .preview-shell .panel-head{display:none}
+  #preview{padding:0}
+  .dop-document{border:0;border-radius:0}
+  .dop-page,.dop-section,.ack-box{break-inside:avoid-page}
+  .med-dir-page{break-before:page}
+  .dop-footer .print-hint{display:none}
+}
+
+  </style>
+</head>
+<body>
+  <div class="brand-bar"></div>
+  <header class="header">
+    <div class="brand"><span>PPDOP Generator</span><span class="shield">&#10003;</span></div>
+  </header>
+  <main>
+    <section class="hero no-print">
+      <div class="eyebrow">Credentialing · Peakpoint Central Nassau</div>
+      <h1>Build delineation of privileges forms <em>in the browser.</em></h1>
+      <p class="sub">Paste a privilege source file, generate an interactive DOP form with PeakPoint branding, then print or save as PDF. Nothing leaves this device.</p>
+    </section>
+
+    <section class="workspace no-print">
+      <div class="panel">
+        <div class="panel-head">
+          <div><span class="step">1</span><h2>Privilege source</h2></div>
+          <button class="link" id="clear" type="button">Clear</button>
+        </div>
+        <textarea id="source" spellcheck="false" placeholder="SPECIALTY: Urology&#10;VERSION: August 2026&#10;&#10;SECTION: Core privileges&#10;QUALIFICATIONS&#10;New Privilege: ...&#10;Renewal of Privilege: ...&#10;&#10;PRIVILEGES&#10;Cystoscopy&#10;Ureteroscopy"></textarea>
+        <div class="panel-foot">
+          <span id="summary">Paste a privilege list, then generate.</span>
+          <label>Facility <input id="organization" type="text" value="Peakpoint Central Nassau Surgery Center"></label>
+        </div>
+      </div>
+    </section>
+
+    <div class="action-bar no-print">
+      <button class="scrub" id="generate" type="button">Generate form</button>
+      <label class="scrub secondary file-btn">Load .txt<input id="file" type="file" accept=".txt,text/plain"></label>
+      <button class="link" id="example" type="button">Try an example</button>
+      <button class="scrub secondary" id="print" type="button" disabled>Print / Save PDF</button>
+      <span class="shortcut">Ctrl / &#8984; + Enter</span>
+    </div>
+
+    <section class="panel preview-shell">
+      <div class="panel-head no-print">
+        <div><span class="step">2</span><h2>DOP preview</h2></div>
+      </div>
+      <div id="preview"><div class="empty-preview">Your DOP form will appear here.</div></div>
+    </section>
+
+    <aside class="notice no-print">
+      <strong>Same source format as the Python generator.</strong>
+      Use <code>SECTION</code>, <code>QUALIFICATIONS</code>, <code>SUBGROUP</code>, <code>SPECIALTY</code>, and <code>VERSION</code> markers.
+      Privilege rows include Newly Requested, Currently Held, and Granted / Renewed checkboxes. Use your browser&rsquo;s print dialog to produce a PDF.
+    </aside>
+  </main>
+  <footer class="site-footer no-print"><span>Tool by @michael_gorin / @AugmentedMD</span></footer>
+  <script>
+/**
+ * Port of parse_document() from credentialing_pdf.py
+ * Parses PeakPoint DOP privilege text into typed blocks.
+ */
+
+function stripComment(line) {
+  if (line.includes("#")) return line.split("#", 1)[0].replace(/\s+$/, "");
+  return line.replace(/\s+$/, "");
+}
+
+function unescapeText(s) {
+  return s.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n");
+}
+
+function parseQualifications(lines, start) {
+  const fields = { e: "", c: "", n: "", r: "" };
+  let current = null;
+  let pendingBlank = false;
+  let j = start;
+  const n = lines.length;
+
+  while (j < n && !lines[j].trim()) j += 1;
+
+  while (j < n) {
+    const stripped = lines[j].trim();
+    if (!stripped) {
+      if (current && fields[current]) pendingBlank = true;
+      j += 1;
+      continue;
+    }
+    const low = stripped.toLowerCase();
+    const up = stripped.toUpperCase();
+    if (up === "SECTION" || up === "[SECTION]" || up.startsWith("SECTION:")) break;
+    if (up === "PRIVILEGES" || up === "PRIVILEGES:" || up === "[PRIVILEGES]") break;
+    if (up === "QUALIFICATIONS" || up === "[QUALIFICATIONS]" || up.startsWith("QUALIFICATIONS:")) break;
+
+    let key = null;
+    if (low.startsWith("education and training:") || low.startsWith("education & training:")) key = "e";
+    else if (low.startsWith("certification:")) key = "c";
+    else if (low.startsWith("new privilege:")) key = "n";
+    else if (low.startsWith("fppe plan:") || low.startsWith("ffpe plan:")) {
+      current = null;
+      pendingBlank = false;
+      j += 1;
+      continue;
+    } else if (
+      low.startsWith("renewal of privilege:") ||
+      low.startsWith("renewal of privileges:") ||
+      low.startsWith("renewal privilege:") ||
+      low.startsWith("renewal of provlidge:") ||
+      low.startsWith("renewal of provlidges:")
+    ) {
+      key = "r";
+    }
+
+    if (key !== null) {
+      current = key;
+      fields[current] = stripped.split(":").slice(1).join(":").trim();
+      pendingBlank = false;
+      j += 1;
+      continue;
+    }
+
+    if (current) {
+      if (!fields[current]) fields[current] = stripped;
+      else fields[current] = fields[current] + (pendingBlank ? "\n\n" : "\n") + stripped;
+      pendingBlank = false;
+      j += 1;
+      continue;
+    }
+    j += 1;
+  }
+
+  return [
+    {
+      type: "qualifications",
+      educationTraining: fields.e,
+      certification: fields.c,
+      newPrivilege: fields.n,
+      renewalOfPrivilege: fields.r,
+    },
+    j,
+  ];
+}
+
+function parseDocument(text) {
+  text = text.replace(/^[ \t]*<blank>[ \t]*$/gim, "");
+  text = text.replace(/<blank>/gi, "\n");
+  text = text.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n");
+
+  const rawLines = text.split(/\r?\n/);
+  const lines = rawLines.map(stripComment);
+
+  const hasSection = lines.some((s) => {
+    const t = s.trim();
+    if (!t) return false;
+    const up = t.toUpperCase();
+    return up === "SECTION" || up === "[SECTION]" || up.startsWith("SECTION:");
+  });
+  const hasQual = lines.some((s) => {
+    const t = s.trim();
+    if (!t) return false;
+    const up = t.toUpperCase();
+    return up === "QUALIFICATIONS" || up === "[QUALIFICATIONS]" || up.startsWith("QUALIFICATIONS:");
+  });
+
+  if (!hasSection && !hasQual) {
+    const out = [];
+    let subgroupActive = false;
+    for (const s of lines) {
+      const t = s.trim();
+      if (!t) continue;
+      const up = t.toUpperCase();
+      if (up.startsWith("SUBGROUP:")) {
+        const title = unescapeText(t.split(":").slice(1).join(":").trim());
+        if (title) {
+          out.push({ type: "subgroup", text: title });
+          subgroupActive = true;
+        }
+        continue;
+      }
+      out.push({ type: "privilege", text: t, indent: subgroupActive });
+    }
+    return out;
+  }
+
+  const blocks = [];
+  let i = 0;
+  const n = lines.length;
+  let subgroupActive = false;
+
+  while (i < n) {
+    const stripped = lines[i].trim();
+    if (!stripped) {
+      i += 1;
+      continue;
+    }
+    const up = stripped.toUpperCase();
+
+    if (up.startsWith("SPECIALTY:")) {
+      blocks.push({ type: "specialty", name: unescapeText(stripped.split(":").slice(1).join(":").trim()) });
+      i += 1;
+      continue;
+    }
+    if (up.startsWith("VERSION:")) {
+      blocks.push({ type: "version", date: stripped.split(":").slice(1).join(":").trim() });
+      i += 1;
+      continue;
+    }
+    if (up.startsWith("LOGO:")) {
+      blocks.push({ type: "logo", path: stripped.split(":").slice(1).join(":").trim() });
+      i += 1;
+      continue;
+    }
+    if (up.startsWith("SECTION:")) {
+      blocks.push({ type: "section", title: unescapeText(stripped.split(":").slice(1).join(":").trim()) });
+      subgroupActive = false;
+      i += 1;
+      continue;
+    }
+    if (up === "SECTION" || up === "[SECTION]") {
+      subgroupActive = false;
+      i += 1;
+      while (i < n && !lines[i].trim()) i += 1;
+      const parts = [];
+      while (i < n && lines[i].trim()) {
+        const nxt = lines[i].trim().toUpperCase();
+        if (nxt === "QUALIFICATIONS" || nxt === "[QUALIFICATIONS]" || nxt.startsWith("QUALIFICATIONS:")) break;
+        if (nxt === "SECTION" || nxt === "[SECTION]" || nxt.startsWith("SECTION:")) break;
+        parts.push(lines[i].trim());
+        i += 1;
+      }
+      if (parts.length) blocks.push({ type: "section", title: unescapeText(parts.join(" ")) });
+      continue;
+    }
+    if (up.startsWith("QUALIFICATIONS:")) {
+      subgroupActive = false;
+      i += 1;
+      const [qb, next] = parseQualifications(lines, i);
+      blocks.push(qb);
+      i = next;
+      continue;
+    }
+    if (up === "QUALIFICATIONS" || up === "[QUALIFICATIONS]") {
+      subgroupActive = false;
+      i += 1;
+      const [qb, next] = parseQualifications(lines, i);
+      blocks.push(qb);
+      i = next;
+      continue;
+    }
+    if (up === "PRIVILEGES:" || up === "PRIVILEGES" || up === "[PRIVILEGES]") {
+      subgroupActive = false;
+      i += 1;
+      continue;
+    }
+    if (up.startsWith("SUBGROUP:")) {
+      const title = unescapeText(stripped.split(":").slice(1).join(":").trim());
+      if (title) {
+        blocks.push({ type: "subgroup", text: title });
+        subgroupActive = true;
+      }
+      i += 1;
+      continue;
+    }
+
+    blocks.push({ type: "privilege", text: unescapeText(stripped), indent: subgroupActive });
+    i += 1;
+  }
+
+  return blocks;
+}
+
+function qualDetailRows(q) {
+  if (!q) {
+    return [
+      ["Education & Training:", ""],
+      ["New Privilege:", ""],
+      ["Renewal of Privilege:", ""],
+    ];
+  }
+  const rows = [
+    ["Education & Training:", q.educationTraining || ""],
+    ["New Privilege:", q.newPrivilege || ""],
+    ["Renewal of Privilege:", q.renewalOfPrivilege || ""],
+  ];
+  if ((q.certification || "").trim()) {
+    rows.splice(1, 0, ["Certification:", q.certification]);
+  }
+  return rows;
+}
+
+function emphasizeHtml(text) {
+  return String(text)
+    .split(/(\s+)/)
+    .map((tok) => {
+      if (/^(OR|AND|AND\/OR)$/.test(tok)) return `<strong>${tok}</strong>`;
+      return escapeHtml(tok);
+    })
+    .join("");
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+
+const COVER_INSTRUCTIONS =
+  "Please check the box beside each clinical privilege being requested. Applicants are required to produce information deemed necessary by the center in order to properly evaluate current competence, current clinical activity, and other privileging requirements.";
+
+const ACK_BODY =
+  "I have requested only those privileges which by education, training, current experience, and demonstrated performance I am qualified to perform, and for which I wish to exercise at this center. I further understand that:";
+
+const ACK_ITEMS = [
+  "Privileges requested may differ from those granted and approved;",
+  "Completion of this form, at the present time, does not preclude me from requesting additional privileges in the future;",
+  "The granting of clinical privileges will be made in conformance with the applicable Medical Staff Bylaws and Policies and Procedures;",
+  "Failure to obtain and maintain all threshold criteria set forth above, or non-compliance with the applicable Medical Staff Bylaws or Policies or Procedures, may constitute grounds for non-renewal or restriction/limitation of clinical privileges.",
+];
+
+const MED_DIR_BODY =
+  "The practitioner's request for new, modified, or renewed clinical privileges has been reviewed by the Center's Medical Director or an appropriate member of the Medical Executive Committee and presented to the Governing Board for approval. Privileges that have received a checkmark in the designated column have been granted. Any privileges that were requested but not granted are listed below, along with an explanation for each determination.";
+
+const MED_DIR_NAME = "Medical Director: Michael A. Gorin, M.D.";
+
+function monthYearNow() {
+  return new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
+}
+
+function nl2br(text) {
+  return escapeHtml(text || "").replace(/\n/g, "<br>");
+}
+
+function privilegeHeaderRow() {
+  return `<div class="priv-row priv-header">
+    <div class="priv-text">Privilege</div>
+    <div class="priv-cb">Newly Requested</div>
+    <div class="priv-cb">Currently Held</div>
+    <div class="priv-cb granted">Granted / Renewed</div>
+  </div>`;
+}
+
+function renderSectionTable(title, quals, rowsHtml) {
+  const detailRows = qualDetailRows(quals)
+    .map(
+      ([lab, val]) => `<div class="qual-row">
+      <div class="qual-label">${escapeHtml(lab)}</div>
+      <div class="qual-value">${nl2br(val)}</div>
+    </div>`,
+    )
+    .join("");
+
+  return `<section class="dop-section">
+    <div class="section-title">${escapeHtml(title || "Privileges")}</div>
+    <div class="qual-bar">Qualifications</div>
+    ${detailRows}
+    ${privilegeHeaderRow()}
+    ${rowsHtml}
+  </section>`;
+}
+
+function renderPrivilegeRow(text, indent, idx) {
+  const indentClass = indent ? " indented" : "";
+  return `<div class="priv-row">
+    <div class="priv-text${indentClass}">${emphasizeHtml(text)}</div>
+    <div class="priv-cb"><input type="checkbox" name="NewlyRequested_${idx}" aria-label="Newly requested"></div>
+    <div class="priv-cb"><input type="checkbox" name="CurrentlyHeld_${idx}" aria-label="Currently held"></div>
+    <div class="priv-cb granted"><input type="checkbox" name="GrantedRenewed_${idx}" aria-label="Granted or renewed"></div>
+  </div>`;
+}
+
+function renderSubgroupRow(text) {
+  return `<div class="priv-row subgroup">
+    <div class="priv-text"><strong>${emphasizeHtml(text)}</strong></div>
+    <div class="priv-cb"></div>
+    <div class="priv-cb"></div>
+    <div class="priv-cb granted"></div>
+  </div>`;
+}
+
+function renderCover(specialty, organization) {
+  const org = organization || "Peakpoint Central Nassau Surgery Center";
+  return `<section class="dop-page cover-page">
+    <div class="cover-org">${escapeHtml(org)}</div>
+    <h1 class="specialty-name">${escapeHtml(specialty)}</h1>
+    <p class="dop-label">Delineation of Privileges</p>
+    <div class="applicant-box">
+      <h2>Applicant Information</h2>
+      <label><span>Full Name:</span><input type="text" name="FullName" autocomplete="name"></label>
+      <label><span>Date of Birth:</span><input type="text" name="DateOfBirth" autocomplete="bday"></label>
+      <label><span>Home Address:</span><input type="text" name="HomeAddress" autocomplete="street-address"></label>
+      <label><span>Life Number (if available):</span><input type="text" name="LifeNumber"></label>
+    </div>
+    <div class="instructions">
+      <strong>Instructions:</strong>
+      <p>${escapeHtml(COVER_INSTRUCTIONS)}</p>
+    </div>
+  </section>`;
+}
+
+function renderAcknowledgment() {
+  const letters = ["A", "B", "C", "D"];
+  const items = ACK_ITEMS.map(
+    (item, i) => `<div class="ack-item"><span class="ack-letter">${letters[i]}.</span><span>${escapeHtml(item)}</span></div>`,
+  ).join("");
+  return `<section class="ack-box">
+    <div class="ack-header">Acknowledgment of Practitioner</div>
+    <div class="ack-body">
+      <p>${escapeHtml(ACK_BODY)}</p>
+      ${items}
+      <div class="sig-row">
+        <div class="sig-col"><div class="sig-line"></div><div class="sig-label">Practitioner's Signature</div></div>
+        <div class="sig-col"><div class="sig-line"></div><div class="sig-label">Date</div></div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderMedDir() {
+  const lines = Array.from({ length: 10 }, (_, i) => `<div class="denied-line"><span>${i + 1}.</span><div></div></div>`).join("");
+  return `<section class="dop-page med-dir-page">
+    <div class="ack-box">
+      <div class="ack-header">Medical Director Declaration</div>
+      <div class="ack-body">
+        <p>${escapeHtml(MED_DIR_BODY)}</p>
+        <p class="med-dir-name">${escapeHtml(MED_DIR_NAME)}</p>
+        <div class="sig-row">
+          <div class="sig-col"><div class="sig-line"></div><div class="sig-label">Signature</div></div>
+          <div class="sig-col"><div class="sig-line"></div><div class="sig-label">Date</div></div>
+        </div>
+        <p class="denied-title">Privileges Not Granted / Renewed:</p>
+        ${lines}
+      </div>
+    </div>
+  </section>`;
+}
+
+/**
+ * Build printable DOP HTML from privilege source text.
+ * @param {string} sourceText
+ * @param {{ organization?: string }} [opts]
+ */
+function renderDocument(sourceText, opts = {}) {
+  const blocks = parseDocument(sourceText || "");
+  if (!blocks.length) {
+    return { html: "", meta: { specialty: "", version: "", privilegeCount: 0 } };
+  }
+
+  let specialty = "";
+  let version = monthYearNow();
+  const content = [];
+  for (const b of blocks) {
+    if (b.type === "specialty") specialty = b.name;
+    else if (b.type === "version") version = b.date;
+    else if (b.type !== "logo") content.push(b);
+  }
+
+  const organization = opts.organization || "Peakpoint Central Nassau Surgery Center";
+  let html = "";
+  if (specialty) html += renderCover(specialty, organization);
+
+  let pendingSection = null;
+  let needHeader = true;
+  let sectionRows = [];
+  let sectionTitle = "";
+  let sectionQuals = null;
+  let privIdx = 0;
+  let open = false;
+
+  function flushSection() {
+    if (!open) return;
+    html += renderSectionTable(sectionTitle, sectionQuals, sectionRows.join(""));
+    sectionRows = [];
+    sectionTitle = "";
+    sectionQuals = null;
+    open = false;
+    needHeader = true;
+  }
+
+  function ensureSection(title, quals) {
+    if (!open) {
+      sectionTitle = title || "";
+      sectionQuals = quals || null;
+      open = true;
+      needHeader = false;
+    }
+  }
+
+  for (const b of content) {
+    if (b.type === "section") {
+      flushSection();
+      pendingSection = b.title.trim();
+      continue;
+    }
+    if (b.type === "qualifications") {
+      ensureSection(pendingSection || "", b);
+      pendingSection = null;
+      continue;
+    }
+    if (b.type === "subgroup") {
+      if (pendingSection !== null) {
+        ensureSection(pendingSection, null);
+        pendingSection = null;
+      } else if (!open) {
+        ensureSection("", null);
+      }
+      sectionRows.push(renderSubgroupRow(b.text));
+      continue;
+    }
+    if (b.type === "privilege") {
+      if (pendingSection !== null) {
+        ensureSection(pendingSection, null);
+        pendingSection = null;
+      } else if (!open) {
+        ensureSection("", null);
+      }
+      privIdx += 1;
+      sectionRows.push(renderPrivilegeRow(b.text, b.indent, privIdx));
+    }
+  }
+
+  if (pendingSection !== null) ensureSection(pendingSection, null);
+  flushSection();
+
+  html += renderAcknowledgment();
+  html += renderMedDir();
+
+  const footer = `<footer class="dop-footer"><span>Version: ${escapeHtml(version)}</span><span class="print-hint">Print from browser for PDF</span></footer>`;
+
+  return {
+    html: `<div class="dop-document" data-version="${escapeHtml(version)}">${html}${footer}</div>`,
+    meta: { specialty, version, privilegeCount: privIdx, organization },
+  };
+}
+
+{ parseDocument };
+
+
+const EXAMPLE = `# Peakpoint Central Nassau Surgery Center — sample Urology DOP source
+SPECIALTY: Urology
+VERSION: August 2026
+
+SECTION: Core Urology Privileges
+QUALIFICATIONS
+Education & Training: Successful completion of an ACGME-accredited Urology residency (or AOA / RCPSC equivalent).
+Certification: Current board certification or active candidacy in Urology within seven years of training completion.
+New Privilege: Case log documenting recent performance of requested procedures, or verification letter from Program Director for recent graduates.
+Renewal of Privilege: Case log of procedures performed over the prior 24 months demonstrating ongoing clinical activity.
+FPPE Plan: Focused review of the first five cases for newly requested privileges, as determined by the Medical Director.
+
+PRIVILEGES
+SUBGROUP: Endoscopy
+Cystoscopy
+Cystoscopy with bladder biopsy
+Cystoscopy with ureteral catheterization
+Cystoscopy with fulguration
+Cystoscopy with placement of ureteral stent
+Transurethral resection of bladder tumor (TURBT)
+Transurethral resection of prostate (TURP)
+Ureteroscopy
+Ureteroscopy with calculus removal, biopsy, or fulguration
+
+SUBGROUP: Prostate
+Needle biopsy of prostate (ultrasound-guided)
+Transrectal ultrasound of prostate
+Transurethral laser ablation of prostate
+
+SUBGROUP: Scrotum / Testis / Cord
+Hydrocelectomy
+Vasectomy
+Varicocele ligation
+Orchiectomy, simple or radical inguinal
+Circumcision
+
+SECTION: Advanced / Special Privileges
+QUALIFICATIONS
+Education & Training: Documented residency training OR approved course with hands-on experience for the requested modality.
+New Privilege: Proctoring of the first two cases by a credentialed surgeon, unless waived by the Medical Director.
+Renewal of Privilege: Performance of at least five related cases in the prior 24 months, OR refresher training documentation.
+
+PRIVILEGES
+Holmium / YAG / KTP laser ablation of bladder, ureteral, or urethral lesions
+UroLift or equivalent prostatic urethral lift
+InterStim sacral neuromodulation (evaluation and implant)
+Extracorporeal shock wave lithotripsy (ESWL)
+Insertion of penile prosthesis
+`;
+
+const source = document.getElementById("source");
+const preview = document.getElementById("preview");
+const summary = document.getElementById("summary");
+const clearBtn = document.getElementById("clear");
+const exampleBtn = document.getElementById("example");
+const generateBtn = document.getElementById("generate");
+const printBtn = document.getElementById("print");
+const fileInput = document.getElementById("file");
+const orgInput = document.getElementById("organization");
+
+function updateSummary(meta) {
+  if (!meta || !meta.privilegeCount) {
+    summary.textContent = "Paste a privilege list, then generate.";
+    printBtn.disabled = true;
+    return;
+  }
+  const bits = [];
+  if (meta.specialty) bits.push(meta.specialty);
+  bits.push(`${meta.privilegeCount} privilege${meta.privilegeCount === 1 ? "" : "s"}`);
+  if (meta.version) bits.push(`Version ${meta.version}`);
+  summary.textContent = bits.join(" · ");
+  printBtn.disabled = false;
+}
+
+function generate() {
+  const { html, meta } = renderDocument(source.value, {
+    organization: (orgInput.value || "").trim() || undefined,
+  });
+  if (!html) {
+    preview.innerHTML = `<div class="empty-preview">Your DOP form will appear here.</div>`;
+    updateSummary(null);
+    return;
+  }
+  preview.innerHTML = html;
+  updateSummary(meta);
+  preview.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+source.addEventListener("input", () => {
+  summary.textContent = `${source.value.length.toLocaleString()} characters · ready to generate`;
+});
+
+clearBtn.addEventListener("click", () => {
+  source.value = "";
+  preview.innerHTML = `<div class="empty-preview">Your DOP form will appear here.</div>`;
+  updateSummary(null);
+  source.focus();
+});
+
+exampleBtn.addEventListener("click", () => {
+  source.value = EXAMPLE.trim() + "\n";
+  generate();
+});
+
+generateBtn.addEventListener("click", generate);
+
+printBtn.addEventListener("click", () => {
+  if (printBtn.disabled) return;
+  window.print();
+});
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files && fileInput.files[0];
+  if (!file) return;
+  source.value = await file.text();
+  generate();
+  fileInput.value = "";
+});
+
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    e.preventDefault();
+    generate();
+  }
+});
+
+updateSummary(null);
+
+
+  </script>
+</body>
+</html>

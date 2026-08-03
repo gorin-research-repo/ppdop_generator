@@ -6,7 +6,7 @@ Created by **Michael Gorin, MD**.
 
 ## What it does
 
-Paste (or load) the same privilege text format used by `credentialing_pdf.py`, generate an interactive HTML DOP form with PeakPoint branding, check the three privilege columns, then **Print / Save PDF** from the browser.
+Paste (or load) the same privilege text format used by `credentialing_pdf.py`, preview the form, then **Download PDF** to get an interactive PeakPoint-branded DOP file with the same layout as the Python generator (cover page, section tables, checkboxes, acknowledgment, medical director declaration, footers).
 
 Everything runs locally in one HTML file—no server, no uploads, no telemetry.
 
@@ -15,8 +15,8 @@ Everything runs locally in one HTML file—no server, no uploads, no telemetry.
 1. Open `ppdop-generator.html` in any modern browser  
 2. Paste a privilege source (or click **Try an example** / **Load .txt**)  
 3. Click **Generate form**  
-4. Fill applicant fields and checkboxes  
-5. Use **Print / Save PDF**
+4. Fill applicant fields and checkboxes in the preview  
+5. Click **Download PDF** (same layout as `credentialing_pdf.py`)
 
 ## Source format
 
@@ -52,6 +52,8 @@ See `privileges_example.txt` for a fuller sample.
 | `src/render.js` | HTML DOP layout |
 | `src/app.js` / `src/ui.css` / `src/template.html` | AugmentedMD UI shell |
 | `scripts/build.mjs` | Inlines CSS + JS into `ppdop-generator.html` |
+| `src/pdf.js` | Browser PDF builder (pdf-lib port of `build_pdf`) |
+| `vendor/pdf-lib.min.js` | Vendored pdf-lib for offline single-file builds |
 | `credentialing_pdf.py` | Original PeakPoint PDF generator (PyMuPDF) |
 
 ```bash

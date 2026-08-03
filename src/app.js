@@ -1,4 +1,5 @@
 import { renderDocument } from "./render.js";
+import { buildCredentialingPdf } from "./pdf.js";
 
 const EXAMPLE = `# Peakpoint Central Nassau Surgery Center — sample Urology DOP source
 SPECIALTY: Urology
@@ -60,7 +61,10 @@ const printBtn = document.getElementById("print");
 const fileInput = document.getElementById("file");
 const orgInput = document.getElementById("organization");
 
+let lastMeta = null;
+
 function updateSummary(meta) {
+  lastMeta = meta;
   if (!meta || !meta.privilegeCount) {
     summary.textContent = "Paste a privilege list, then generate.";
     printBtn.disabled = true;
@@ -72,6 +76,25 @@ function updateSummary(meta) {
   if (meta.version) bits.push(`Version ${meta.version}`);
   summary.textContent = bits.join(" · ");
   printBtn.disabled = false;
+}
+
+function collectFieldValues() {
+  const root = preview;
+  const names = ["FullName", "DateOfBirth", "HomeAddress", "LifeNumber"];
+  const out = {};
+  for (const name of names) {
+    const el = root.querySelector(`[name="${name}"]`);
+    if (el) out[name] = el.value || "";
+  }
+  return out;
+}
+
+function collectCheckboxValues() {
+  const out = {};
+  preview.querySelectorAll('input[type="checkbox"][name]').forEach((el) => {
+    out[el.name] = !!el.checked;
+  });
+  return out;
 }
 
 function generate() {
@@ -86,6 +109,36 @@ function generate() {
   preview.innerHTML = html;
   updateSummary(meta);
   preview.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function downloadPdf() {
+  if (printBtn.disabled) return;
+  printBtn.disabled = true;
+  const prev = printBtn.textContent;
+  printBtn.textContent = "Building PDF…";
+  try {
+    const bytes = await buildCredentialingPdf(source.value, {
+      organization: (orgInput.value || "").trim() || undefined,
+      fieldValues: collectFieldValues(),
+      checkboxValues: collectCheckboxValues(),
+    });
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const specialty = (lastMeta && lastMeta.specialty) || "privileges";
+    a.href = url;
+    a.download = `${specialty.replace(/\s+/g, "_").toLowerCase()}_dop.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error(err);
+    alert("PDF generation failed. See console for details.");
+  } finally {
+    printBtn.textContent = prev;
+    printBtn.disabled = false;
+  }
 }
 
 source.addEventListener("input", () => {
@@ -105,11 +158,7 @@ exampleBtn.addEventListener("click", () => {
 });
 
 generateBtn.addEventListener("click", generate);
-
-printBtn.addEventListener("click", () => {
-  if (printBtn.disabled) return;
-  window.print();
-});
+printBtn.addEventListener("click", downloadPdf);
 
 fileInput.addEventListener("change", async () => {
   const file = fileInput.files && fileInput.files[0];

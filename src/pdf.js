@@ -67,6 +67,42 @@ const ACK_GAP_LINES= 2;
 // Words rendered in HelveticaBold regardless of context
 const EMPHASIS_WORDS = new Set(["OR", "AND", "AND/OR"]);
 
+// PDF Base-14 Helvetica widths (AFM units / 1000), matching PyMuPDF `helv`/`hebo`
+// so wrap + cursor math stay identical to credentialing_pdf.py.
+const HEL_V = {
+  " ": 278, "!": 278, '"': 355, "#": 556, $: 556, "%": 889, "&": 667, "'": 191,
+  "(": 333, ")": 333, "*": 389, "+": 584, ",": 278, "-": 333, ".": 278, "/": 278,
+  "0": 556, "1": 556, "2": 556, "3": 556, "4": 556, "5": 556, "6": 556, "7": 556,
+  "8": 556, "9": 556, ":": 278, ";": 278, "<": 584, "=": 584, ">": 584, "?": 556,
+  "@": 1015, A: 667, B: 667, C: 722, D: 722, E: 667, F: 611, G: 778, H: 722, I: 278,
+  J: 500, K: 667, L: 556, M: 833, N: 722, O: 778, P: 667, Q: 778, R: 722, S: 667,
+  T: 611, U: 722, V: 667, W: 944, X: 667, Y: 667, Z: 611, "[": 278, "\\": 278,
+  "]": 278, "^": 469, _: 556, "`": 333, a: 556, b: 556, c: 500, d: 556, e: 556,
+  f: 278, g: 556, h: 556, i: 222, j: 222, k: 500, l: 222, m: 833, n: 556, o: 556,
+  p: 556, q: 556, r: 333, s: 500, t: 278, u: 556, v: 500, w: 722, x: 500, y: 500,
+  z: 500, "{": 334, "|": 260, "}": 334, "~": 584,
+};
+const HEL_BO = {
+  " ": 278, "!": 333, '"': 474, "#": 556, $: 556, "%": 889, "&": 722, "'": 238,
+  "(": 333, ")": 333, "*": 389, "+": 584, ",": 278, "-": 333, ".": 278, "/": 278,
+  "0": 556, "1": 556, "2": 556, "3": 556, "4": 556, "5": 556, "6": 556, "7": 556,
+  "8": 556, "9": 556, ":": 333, ";": 333, "<": 584, "=": 584, ">": 584, "?": 611,
+  "@": 975, A: 722, B: 722, C: 722, D: 722, E: 667, F: 611, G: 778, H: 722, I: 278,
+  J: 556, K: 722, L: 611, M: 833, N: 722, O: 778, P: 667, Q: 778, R: 722, S: 667,
+  T: 611, U: 722, V: 667, W: 944, X: 667, Y: 667, Z: 611, "[": 333, "\\": 278,
+  "]": 333, "^": 584, _: 556, "`": 333, a: 556, b: 611, c: 556, d: 611, e: 556,
+  f: 333, g: 611, h: 611, i: 278, j: 278, k: 556, l: 278, m: 889, n: 611, o: 611,
+  p: 611, q: 611, r: 389, s: 556, t: 333, u: 611, v: 556, w: 778, x: 556, y: 556,
+  z: 500, "{": 389, "|": 280, "}": 389, "~": 584,
+};
+
+function afmWidth(text, size, bold) {
+  const table = bold ? HEL_BO : HEL_V;
+  let w = 0;
+  for (const ch of text) w += table[ch] ?? 500;
+  return (w * size) / 1000;
+}
+
 // ── Verbatim string constants ───────────────────────────────────────────────
 const COVER_INSTRUCTIONS_BODY =
   "Please check the box beside each clinical privilege being " +
@@ -171,16 +207,19 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     return EMPHASIS_WORDS.has(token.trim()) ? hebo : defaultFont;
   }
 
+  function isBoldFont(font) {
+    return font === hebo;
+  }
+
   /**
    * Total rendered width of `text` at `size`, respecting emphasis-word font
-   * switching.  Mirrors Python's _text_width_with_emphasis().
-   * defaultFont defaults to helv (regular), matching how Python calls
-   * wrap_lines() — always with "helv" as the fallback.
+   * switching. Uses PyMuPDF-compatible AFM widths (not pdf-lib's metrics).
    */
   function textWidthWithEmphasis(text, size, defaultFont = helv) {
     let w = 0;
-    for (const tok of (text.match(/\S+|\s+/g) || [])) {
-      w += effectiveFont(tok, defaultFont).widthOfTextAtSize(tok, size);
+    for (const tok of text.match(/\S+|\s+/g) || []) {
+      const bold = EMPHASIS_WORDS.has(tok.trim()) ? true : isBoldFont(defaultFont);
+      w += afmWidth(tok, size, bold);
     }
     return w;
   }
@@ -244,9 +283,10 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
    */
   function drawTextWithEmphasis(page, x, pyBaseline, text, size, defaultFont, color) {
     let cursor = x;
-    for (const tok of (text.match(/\S+|\s+/g) || [])) {
+    for (const tok of text.match(/\S+|\s+/g) || []) {
       const font = effectiveFont(tok, defaultFont);
-      const tw   = font.widthOfTextAtSize(tok, size);
+      const bold = EMPHASIS_WORDS.has(tok.trim()) ? true : isBoldFont(defaultFont);
+      const tw = afmWidth(tok, size, bold);
       if (tok.trim()) {
         page.drawText(tok, { x: cursor, y: PAGE_H - pyBaseline, size, font, color });
       }
@@ -448,7 +488,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     let y = TOP_M;
 
     // Specialty name — BRAND_GREEN, centred, 18 pt
-    const specW = helv.widthOfTextAtSize(specialty, 18);
+    const specW = afmWidth(specialty, 18, false);
     page.drawText(specialty, {
       x: x0 + (uw - specW) / 2,
       y: PAGE_H - (y + 18),
@@ -458,7 +498,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
 
     // "Delineation of Privileges" — black, centred, 12 pt
     const dop  = "Delineation of Privileges";
-    const dopW = helv.widthOfTextAtSize(dop, 12);
+    const dopW = afmWidth(dop, 12, false);
     page.drawText(dop, {
       x: x0 + (uw - dopW) / 2,
       y: PAGE_H - (y + 12),
@@ -474,7 +514,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
       ["Home Address:",               "HomeAddress"],
       ["Life Number (if available):", "LifeNumber"],
     ];
-    const lblWs   = fields.map(([lbl]) => helv.widthOfTextAtSize(lbl, fFont) + 6);
+    const lblWs   = fields.map(([lbl]) => afmWidth(lbl, fFont, false) + 6);
     const maxLblW = Math.max(...lblWs);
     const hdrLblH = 11 * LINE_H_FACTOR + 2;              // bold header height
     const rowsH   = fields.length * (fH + rGap) - rGap;
@@ -540,7 +580,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     y += bodyH;
 
     // Lettered items A–D
-    const letterW = helv.widthOfTextAtSize("A.    ", ACK_FONT);
+    const letterW = afmWidth("A.    ", ACK_FONT, false);
     for (const item of ACK_ITEMS) {
       const ti     = item.indexOf("\t");
       const letter = ti >= 0 ? item.slice(0, ti) : "";
@@ -577,7 +617,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     const lblH    = ACK_FONT * ACK_LINE_FACTOR + 2;
 
     const sigLbl  = "Practitioner's Signature";
-    const sigLblW = helv.widthOfTextAtSize(sigLbl, ACK_FONT);
+    const sigLblW = afmWidth(sigLbl, ACK_FONT, false);
     page.drawText(sigLbl, {
       x: sigStart + Math.max(0, (lineW - sigLblW) / 2),
       y: PAGE_H - (sigLblY + ACK_FONT),
@@ -585,7 +625,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     });
 
     const datLbl  = "Date";
-    const datLblW = helv.widthOfTextAtSize(datLbl, ACK_FONT);
+    const datLblW = afmWidth(datLbl, ACK_FONT, false);
     page.drawText(datLbl, {
       x: datStart + Math.max(0, (lineW - datLblW) / 2),
       y: PAGE_H - (sigLblY + ACK_FONT),
@@ -648,7 +688,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     const lblH    = ACK_FONT * ACK_LINE_FACTOR + 2;
 
     const sigLbl  = "Signature";
-    const sigLblW = helv.widthOfTextAtSize(sigLbl, ACK_FONT);
+    const sigLblW = afmWidth(sigLbl, ACK_FONT, false);
     page.drawText(sigLbl, {
       x: sigStart + Math.max(0, (lineW - sigLblW) / 2),
       y: PAGE_H - (sigLblY + ACK_FONT),
@@ -656,7 +696,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     });
 
     const datLbl  = "Date";
-    const datLblW = helv.widthOfTextAtSize(datLbl, ACK_FONT);
+    const datLblW = afmWidth(datLbl, ACK_FONT, false);
     page.drawText(datLbl, {
       x: datStart + Math.max(0, (lineW - datLblW) / 2),
       y: PAGE_H - (sigLblY + ACK_FONT),
@@ -678,7 +718,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
 
     // 10 numbered blank lines for denied privileges
     const deniedRowH = ACK_LEADING + 8;
-    const numColW    = helv.widthOfTextAtSize("10.", ACK_FONT) + 6;
+    const numColW    = afmWidth("10.", ACK_FONT, false) + 6;
     const lineX0     = x0 + pad + numColW + 6;
     const lineX1     = x4 - pad;
     for (let i = 1; i <= 10; i++) {
@@ -711,7 +751,7 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
       const p = pages[n];
       p.drawText(versionDate, { x: x0, y: pdfY, size: FOOTER_FONT, font: helv, color: FOOTER_C });
       const pgText = `Page ${n + 1} of ${total}`;
-      const pgW    = helv.widthOfTextAtSize(pgText, FOOTER_FONT);
+      const pgW    = afmWidth(pgText, FOOTER_FONT, false);
       p.drawText(pgText, { x: x1 - pgW, y: pdfY, size: FOOTER_FONT, font: helv, color: FOOTER_C });
     }
   }

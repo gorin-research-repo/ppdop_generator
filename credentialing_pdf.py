@@ -800,9 +800,13 @@ def draw_cover_page(doc: fitz.Document, specialty: str, *, logo_path: str | None
     # ── Instructions ──────────────────────────────────────────────────────────
     # "Instructions:" bold on its own line, body text below at x0 (no indent)
     lh10 = 10 * LINE_H_FACTOR + 2
-    page.insert_textbox(fitz.Rect(x0, y, x1, y + lh10),
-                        "Instructions:", fontsize=10, fontname="hebo", color=(0, 0, 0),
-                        lineheight=LINE_H_FACTOR)
+    page.insert_text(
+        fitz.Point(x0, y + 10),
+        "Instructions:",
+        fontsize=10,
+        fontname="hebo",
+        color=(0, 0, 0),
+    )
     y += lh10
     body_lines = wrap_lines(COVER_INSTRUCTIONS_BODY, uw, 10)
     body_h = len(body_lines) * 10 * LINE_H_FACTOR + 4

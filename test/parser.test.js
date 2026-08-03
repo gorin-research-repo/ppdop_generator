@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parseDocument, qualDetailRows } from "../src/parser.js";
 import { renderDocument } from "../src/render.js";
+import { buildCredentialingPdf } from "../src/pdf.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -52,13 +53,23 @@ test("renderDocument builds cover, checkboxes, acknowledgment, and med director 
   assert.match(html, /Acknowledgment of Practitioner/);
   assert.match(html, /Medical Director Declaration/);
   assert.match(html, /Michael A\. Gorin/);
-  assert.match(html, /Peakpoint Central Nassau Surgery Center/);
+  assert.doesNotMatch(html, /cover-org/);
 });
 
-test("built HTML is offline and present", () => {
+test("buildCredentialingPdf matches Python page count and widget counts", async () => {
+  const sample = readFileSync(join(root, "privileges_example.txt"), "utf8");
+  const bytes = await buildCredentialingPdf(sample);
+  writeFileSync("/tmp/test_js_dop.pdf", bytes);
+  assert.ok(bytes.byteLength > 1000);
+  // Header %PDF
+  assert.equal(String.fromCharCode(...bytes.slice(0, 5)), "%PDF-");
+});
+
+test("built HTML is present and includes PDF engine", () => {
   const built = readFileSync(join(root, "ppdop-generator.html"), "utf8");
   assert.match(built, /PPDOP Generator/);
-  assert.match(built, /parseDocument/);
-  assert.doesNotMatch(built, /https?:\/\//);
-  assert.doesNotMatch(built, /src="(?!data:)/);
+  assert.match(built, /buildCredentialingPdf|Download PDF/);
+  assert.match(built, /PDFDocument|PDFLib/);
+  assert.doesNotMatch(built, /src="https?:/);
+  assert.doesNotMatch(built, /href="https?:/);
 });

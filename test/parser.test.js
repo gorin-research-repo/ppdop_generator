@@ -73,3 +73,11 @@ test("built HTML is present and includes PDF engine", () => {
   assert.doesNotMatch(built, /src="https?:/);
   assert.doesNotMatch(built, /href="https?:/);
 });
+
+test("built HTML script parses without duplicate-binding errors", () => {
+  const built = readFileSync(join(root, "ppdop-generator.html"), "utf8");
+  const match = built.match(/<script>([\s\S]*)<\/script>/);
+  assert.ok(match, "missing script tag");
+  // Function constructor parses without executing — catches SyntaxError like redeclared const
+  assert.doesNotThrow(() => new Function(match[1]));
+});

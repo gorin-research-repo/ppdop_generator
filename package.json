@@ -8,5 +8,8 @@
     "build": "node scripts/build.mjs",
     "start": "npm run build && python3 -m http.server 8080",
     "test": "npm run build --silent && node --test"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
   }
 }

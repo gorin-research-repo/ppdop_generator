@@ -38,7 +38,7 @@
       <button class="scrub" id="generate" type="button">Generate form</button>
       <label class="scrub secondary file-btn">Load .txt<input id="file" type="file" accept=".txt,text/plain"></label>
       <button class="link" id="example" type="button">Try an example</button>
-      <button class="scrub secondary" id="print" type="button" disabled>Print / Save PDF</button>
+      <button class="scrub secondary" id="print" type="button" disabled>Download PDF</button>
       <span class="shortcut">Ctrl / &#8984; + Enter</span>
     </div>
 
@@ -50,9 +50,9 @@
     </section>
 
     <aside class="notice no-print">
-      <strong>Same source format as the Python generator.</strong>
+      <strong>Same source format and PDF layout as the Python generator.</strong>
       Use <code>SECTION</code>, <code>QUALIFICATIONS</code>, <code>SUBGROUP</code>, <code>SPECIALTY</code>, and <code>VERSION</code> markers.
-      Privilege rows include Newly Requested, Currently Held, and Granted / Renewed checkboxes. Use your browser&rsquo;s print dialog to produce a PDF.
+      <strong>Download PDF</strong> builds an interactive PeakPoint-branded form identical to <code>credentialing_pdf.py</code> (cover, section tables, checkboxes, acknowledgment, medical director page, footers).
     </aside>
   </main>
   <footer class="site-footer no-print"><span>Tool by @michael_gorin / @AugmentedMD</span></footer>

@@ -73,10 +73,8 @@ function renderSubgroupRow(text) {
   </div>`;
 }
 
-function renderCover(specialty, organization) {
-  const org = organization || "Peakpoint Central Nassau Surgery Center";
+function renderCover(specialty) {
   return `<section class="dop-page cover-page">
-    <div class="cover-org">${escapeHtml(org)}</div>
     <h1 class="specialty-name">${escapeHtml(specialty)}</h1>
     <p class="dop-label">Delineation of Privileges</p>
     <div class="applicant-box">
@@ -152,7 +150,7 @@ export function renderDocument(sourceText, opts = {}) {
 
   const organization = opts.organization || "Peakpoint Central Nassau Surgery Center";
   let html = "";
-  if (specialty) html += renderCover(specialty, organization);
+  if (specialty) html += renderCover(specialty);
 
   let pendingSection = null;
   let needHeader = true;

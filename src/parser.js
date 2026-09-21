@@ -350,6 +350,9 @@ export function formatPrivilegeHtml(text) {
       if (line.startsWith(ADD_REQ_ITEM_PREFIX)) {
         return `<span class="addl-req-item">${emphasizeHtml(`- ${line.slice(ADD_REQ_ITEM_PREFIX.length)}`)}</span>`;
       }
+      if (isAdditionalRequirementsLine(line)) {
+        return `<span class="priv-line addl-req-label">${emphasizeHtml(line)}</span>`;
+      }
       return `<span class="priv-line">${emphasizeHtml(line)}</span>`;
     })
     .join("");

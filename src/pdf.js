@@ -259,15 +259,21 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
   const HALF_LINE_GAP = 0.5;
 
   function wrapLinesWithItemGaps(text, maxW, size) {
+    // Half-line gaps: privilege → "Additional Requirements:" label, and between dashed items.
     const segments = String(text).split("\n");
     const out = [];
     for (let i = 0; i < segments.length; i++) {
       const wrapped = wrapLines(segments[i], maxW, size);
       const next = segments[i + 1] || "";
-      const gap =
-        segments[i].startsWith(ADD_REQ_ITEM_PREFIX) && next.startsWith(ADD_REQ_ITEM_PREFIX)
-          ? HALF_LINE_GAP
-          : 0;
+      let gap = 0;
+      if (/^additional requirements:/i.test(next.trim())) {
+        gap = HALF_LINE_GAP;
+      } else if (
+        segments[i].startsWith(ADD_REQ_ITEM_PREFIX) &&
+        next.startsWith(ADD_REQ_ITEM_PREFIX)
+      ) {
+        gap = HALF_LINE_GAP;
+      }
       wrapped.forEach((line, j) => {
         out.push({ text: line, gapAfter: j === wrapped.length - 1 ? gap : 0 });
       });

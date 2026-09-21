@@ -115,9 +115,12 @@ test("anesthesiology DOP keeps pediatric additional requirements on one privileg
   assert.equal(meta.privilegeCount, 8);
   assert.match(html, /<strong>AND\/OR<\/strong>/);
   assert.match(html, /class="addl-req-item"/);
+  assert.match(html, /class="priv-line addl-req-label"/);
   assert.match(html, /<strong>AND<\/strong> Current certification in Pediatric Advanced Life Support/);
   assert.match(html, /&lt;2 months of age/);
-  assert.match(formatPrivilegeHtml(pediatric.text), /class="addl-req-item"/);
+  const privHtml = formatPrivilegeHtml(pediatric.text);
+  assert.match(privHtml, /class="addl-req-item"/);
+  assert.match(privHtml, /class="priv-line addl-req-label"/);
 });
 
 test("emphasizeHtml bolds connectors and preserves paragraph breaks", () => {

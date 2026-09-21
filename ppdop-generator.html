@@ -130,6 +130,9 @@ textarea::placeholder{color:var(--muted)}
 .priv-copy{flex:1;min-width:0}
 .priv-copy strong,.qual-value strong{font-weight:700}
 .priv-line{display:block}
+.priv-line + .addl-req-label{
+  margin-top:0.5em             /* half-line between privilege title and Additional Requirements */
+}
 .addl-req-item{
   display:block;
   margin-left:1.11em;          /* ~4 spaces at body size */
@@ -599,6 +602,9 @@ textarea::placeholder{color:var(--muted)}
     return String(text).split("\n").map((line) => {
       if (line.startsWith(ADD_REQ_ITEM_PREFIX)) {
         return `<span class="addl-req-item">${emphasizeHtml(`- ${line.slice(ADD_REQ_ITEM_PREFIX.length)}`)}</span>`;
+      }
+      if (isAdditionalRequirementsLine(line)) {
+        return `<span class="priv-line addl-req-label">${emphasizeHtml(line)}</span>`;
       }
       return `<span class="priv-line">${emphasizeHtml(line)}</span>`;
     }).join("");
@@ -1128,7 +1134,12 @@ textarea::placeholder{color:var(--muted)}
       for (let i = 0; i < segments.length; i++) {
         const wrapped = wrapLines(segments[i], maxW, size);
         const next = segments[i + 1] || "";
-        const gap = segments[i].startsWith(ADD_REQ_ITEM_PREFIX2) && next.startsWith(ADD_REQ_ITEM_PREFIX2) ? HALF_LINE_GAP : 0;
+        let gap = 0;
+        if (/^additional requirements:/i.test(next.trim())) {
+          gap = HALF_LINE_GAP;
+        } else if (segments[i].startsWith(ADD_REQ_ITEM_PREFIX2) && next.startsWith(ADD_REQ_ITEM_PREFIX2)) {
+          gap = HALF_LINE_GAP;
+        }
         wrapped.forEach((line, j) => {
           out.push({ text: line, gapAfter: j === wrapped.length - 1 ? gap : 0 });
         });

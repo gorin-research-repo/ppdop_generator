@@ -227,25 +227,59 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
   /**
    * Word-wrap `text` to fit within `maxW` at `size`.  Hard "\n" forces a line
    * break.  Always uses helv for width calculations (matching Python).
+   * Leading spaces are preserved; "- " items wrap with a hanging indent.
    */
   function wrapLines(text, maxW, size) {
     const result = [];
-    for (const seg of text.split("\n")) {
-      const words = seg.split(/\s+/).filter(Boolean);
+    for (const seg of String(text).split("\n")) {
+      const indent = (seg.match(/^ */) || [""])[0];
+      const body = seg.slice(indent.length);
+      const words = body.split(/\s+/).filter(Boolean);
       if (!words.length) { result.push(""); continue; }
+      const hang = body.startsWith("- ") ? indent + "  " : indent;
       let cur = [];
+      let prefix = indent;
       for (const w of words) {
-        const trial = [...cur, w].join(" ");
-        if (textWidthWithEmphasis(trial, size, helv) <= maxW) {
+        const content = cur.length ? `${cur.join(" ")} ${w}` : w;
+        const trial = prefix + content;
+        if (textWidthWithEmphasis(trial, size, helv) <= maxW || !cur.length) {
           cur.push(w);
         } else {
-          if (cur.length) result.push(cur.join(" "));
+          result.push(prefix + cur.join(" "));
+          prefix = hang;
           cur = [w];
         }
       }
-      if (cur.length) result.push(cur.join(" "));
+      if (cur.length) result.push(prefix + cur.join(" "));
     }
     return result.length ? result : [""];
+  }
+
+  const ADD_REQ_ITEM_PREFIX = "    - ";
+  const HALF_LINE_GAP = 0.5;
+
+  function wrapLinesWithItemGaps(text, maxW, size) {
+    const segments = String(text).split("\n");
+    const out = [];
+    for (let i = 0; i < segments.length; i++) {
+      const wrapped = wrapLines(segments[i], maxW, size);
+      const next = segments[i + 1] || "";
+      const gap =
+        segments[i].startsWith(ADD_REQ_ITEM_PREFIX) && next.startsWith(ADD_REQ_ITEM_PREFIX)
+          ? HALF_LINE_GAP
+          : 0;
+      wrapped.forEach((line, j) => {
+        out.push({ text: line, gapAfter: j === wrapped.length - 1 ? gap : 0 });
+      });
+    }
+    return out.length ? out : [{ text: "", gapAfter: 0 }];
+  }
+
+  function wrappedLayoutHeight(items, size) {
+    const leading = size * LINE_H_FACTOR;
+    let h = 0;
+    for (const it of items) h += leading * (1 + it.gapAfter);
+    return h;
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -307,19 +341,19 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
     const iX0   = x0 + hPad;
     const iX1   = x1 - hPad;
     const iW    = Math.max(iX1 - iX0, 10);
-    const lines = wrapLines(text, iW, size);
+    const items = wrapLinesWithItemGaps(text, iW, size);
     const leading = size * LINE_H_FACTOR;
-    const textH = lines.length * leading;
+    const textH = wrappedLayoutHeight(items, size);
     const top   = pyTop + Math.max(0, (pyBottom - pyTop - textH) / 2);
     let pyBL    = top + size;
-    for (const line of lines) {
-      const draw = line || " ";
+    for (const it of items) {
+      const draw = it.text || " ";
       const w    = textWidthWithEmphasis(draw, size, defaultFont);
       let x = iX0;
       if (align === 1) x = iX0 + Math.max(0, (iW - w) / 2);
       else if (align === 2) x = Math.max(iX0, iX1 - w);
       drawTextWithEmphasis(page, x, pyBL, draw, size, defaultFont, color);
-      pyBL += leading;
+      pyBL += leading * (1 + it.gapAfter);
     }
   }
 
@@ -937,8 +971,8 @@ export async function buildCredentialingPdf(sourceText, options = {}) {
 
       privIdx += 1;
       const iOff  = b.indent ? 16 : 0;
-      const lns   = wrapLines(b.text, Math.max(20, textW - iOff), QUAL_FONT);
-      const rH    = Math.max(HEADER_H, lns.length * QUAL_LEADING + 2 * QUAL_ROW_PAD);
+      const items = wrapLinesWithItemGaps(b.text, Math.max(20, textW - iOff), QUAL_FONT);
+      const rH    = Math.max(HEADER_H, wrappedLayoutHeight(items, QUAL_FONT) + 2 * QUAL_ROW_PAD);
 
       if (y + rH > PAGE_H - BOTTOM_M) {
         pageBreakInSection();

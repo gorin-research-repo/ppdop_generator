@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { parseDocument, qualDetailRows } from "../src/parser.js";
+import { parseDocument, qualDetailRows, emphasizeHtml, formatPrivilegeHtml } from "../src/parser.js";
 import { renderDocument } from "../src/render.js";
 import { buildCredentialingPdf } from "../src/pdf.js";
 
@@ -80,4 +80,50 @@ test("built HTML script parses without duplicate-binding errors", () => {
   assert.ok(match, "missing script tag");
   // Function constructor parses without executing — catches SyntaxError like redeclared const
   assert.doesNotThrow(() => new Function(match[1]));
+});
+
+test("anesthesiology DOP keeps pediatric additional requirements on one privilege", () => {
+  const sample = readFileSync(join(root, "privileges_anesthesiology.txt"), "utf8");
+  const blocks = parseDocument(sample);
+  assert.ok(blocks.some((b) => b.type === "specialty" && b.name === "Anesthesiology (Physician)"));
+  assert.ok(blocks.some((b) => b.type === "version" && b.date === "September 21, 2026"));
+
+  const quals = blocks.find((b) => b.type === "qualifications");
+  assert.match(quals.educationTraining, /\n\nOR An equivalent as set forth in the Medical Staff Bylaws\./);
+  assert.match(quals.certification, /\n\nAND Current certification in Advanced Cardiovascular Life Support/);
+  assert.match(quals.certification, /\n\nAND\/OR Current certification in Perioperative Resuscitation/);
+  assert.match(quals.certification, /Maintenance of Certification is required/);
+  assert.match(quals.newPrivilege, /\n\nOR Successful completion of an ACGME-/);
+
+  const privileges = blocks.filter((b) => b.type === "privilege");
+  assert.equal(privileges.length, 8);
+
+  const pediatric = privileges.find((b) => b.text.startsWith("Provide anesthesia care to patients <2 months of age"));
+  assert.ok(pediatric, "missing <2 months privilege");
+  assert.match(pediatric.text, /^Provide anesthesia care to patients <2 months of age\nAdditional Requirements:/);
+  assert.match(pediatric.text, /\n    - Successful completion of an ACGME-/);
+  assert.match(pediatric.text, /\n    - OR An equivalent as set forth in the Medical Staff Bylaws\./);
+  assert.match(pediatric.text, /\n    - AND Current certification in Pediatric Advanced Life Support/);
+  assert.doesNotMatch(pediatric.text, /\n\n    - /);
+  assert.equal(
+    privileges.filter((b) => /Additional Requirements:|Pediatric Advanced Life Support/.test(b.text)).length,
+    1,
+  );
+
+  const { html, meta } = renderDocument(sample);
+  assert.equal(meta.specialty, "Anesthesiology (Physician)");
+  assert.equal(meta.privilegeCount, 8);
+  assert.match(html, /<strong>AND\/OR<\/strong>/);
+  assert.match(html, /class="addl-req-item"/);
+  assert.match(html, /<strong>AND<\/strong> Current certification in Pediatric Advanced Life Support/);
+  assert.match(html, /&lt;2 months of age/);
+  assert.match(formatPrivilegeHtml(pediatric.text), /class="addl-req-item"/);
+});
+
+test("emphasizeHtml bolds connectors and preserves paragraph breaks", () => {
+  const html = emphasizeHtml("Board certified.\n\nOR An equivalent.\n\nAND ACLS.\n\nAND/OR PeRLS.");
+  assert.match(html, /<strong>OR<\/strong>/);
+  assert.match(html, /<strong>AND<\/strong>/);
+  assert.match(html, /<strong>AND\/OR<\/strong>/);
+  assert.match(html, /<br><br>/);
 });

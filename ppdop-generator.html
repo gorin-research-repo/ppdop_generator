@@ -127,6 +127,17 @@ textarea::placeholder{color:var(--muted)}
 .priv-row.priv-header{background:var(--pp-header);font-weight:700;font-size:10px;text-align:center}
 .priv-row.priv-header .priv-text{text-align:left;padding-left:12px}
 .priv-text{padding:7px 12px;font-size:11px;border-right:1px solid var(--pp-stroke);display:flex;align-items:center}
+.priv-copy{flex:1;min-width:0}
+.priv-copy strong,.qual-value strong{font-weight:700}
+.priv-line{display:block}
+.addl-req-item{
+  display:block;
+  margin-left:1.11em;          /* ~4 spaces at body size */
+  padding-left:1.2em;
+  text-indent:-1.2em;          /* hanging dash */
+  margin-top:0.5em             /* half-line gap between items; tighter than header <Blank> */
+}
+.priv-line + .addl-req-item{margin-top:0.2em}
 .priv-text.indented{padding-left:28px}
 .priv-cb{
   display:flex;align-items:center;justify-content:center;padding:4px 2px;border-right:1px solid var(--pp-stroke);
@@ -297,6 +308,70 @@ textarea::placeholder{color:var(--muted)}
   function unescapeText(s) {
     return s.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n");
   }
+  function isAdditionalRequirementsLine(stripped) {
+    return stripped.toLowerCase().startsWith("additional requirements:");
+  }
+  function startsWithConnector(stripped) {
+    return /^(OR|AND|AND\/OR)(?:\s|$)/.test(stripped);
+  }
+  var ADD_REQ_ITEM_PREFIX = "    - ";
+  function additionalRequirementsValue(stripped) {
+    const idx = stripped.indexOf(":");
+    return idx === -1 ? "" : stripped.slice(idx + 1).trim();
+  }
+  function additionalRequirementsLabel(stripped) {
+    const idx = stripped.indexOf(":");
+    const label = (idx === -1 ? stripped : stripped.slice(0, idx)).trim();
+    return `${label}:`;
+  }
+  function formatAdditionalRequirementItem(stripped) {
+    const body = unescapeText(stripped).replace(/^[-–—]\s+/, "");
+    return ADD_REQ_ITEM_PREFIX + body;
+  }
+  function isDashedItem(stripped) {
+    return /^[-–—]\s+/.test(stripped);
+  }
+  function isAdditionalRequirementContinuation(stripped, state) {
+    if (!state.active) return false;
+    if (state.waitingBody) return true;
+    const body = stripped.replace(/^[-–—]\s+/, "");
+    return startsWithConnector(stripped) || startsWithConnector(body) || isDashedItem(stripped);
+  }
+  function createPrivilegeContinuation() {
+    return { active: false, pendingBlank: false, waitingBody: false };
+  }
+  function notePrivilegeBlank(state) {
+    if (state.active) state.pendingBlank = true;
+  }
+  function resetPrivilegeContinuation(state) {
+    state.active = false;
+    state.pendingBlank = false;
+    state.waitingBody = false;
+  }
+  function tryAppendPrivilegeContinuation(blocks, stripped, state) {
+    const last = blocks[blocks.length - 1];
+    if (!last || last.type !== "privilege") {
+      resetPrivilegeContinuation(state);
+      return false;
+    }
+    if (isAdditionalRequirementsLine(stripped)) {
+      const value = additionalRequirementsValue(stripped);
+      last.text += (last.text ? "\n" : "") + additionalRequirementsLabel(stripped);
+      if (value) last.text += "\n" + formatAdditionalRequirementItem(value);
+      state.active = true;
+      state.waitingBody = !value;
+      state.pendingBlank = false;
+      return true;
+    }
+    if (isAdditionalRequirementContinuation(stripped, state)) {
+      last.text += "\n" + formatAdditionalRequirementItem(stripped);
+      state.waitingBody = false;
+      state.pendingBlank = false;
+      return true;
+    }
+    resetPrivilegeContinuation(state);
+    return false;
+  }
   function parseQualifications(lines, start) {
     const fields = { e: "", c: "", n: "", r: "" };
     let current = null;
@@ -376,11 +451,16 @@ textarea::placeholder{color:var(--muted)}
     if (!hasSection && !hasQual) {
       const out = [];
       let subgroupActive2 = false;
+      const cont2 = createPrivilegeContinuation();
       for (const s of lines) {
         const t = s.trim();
-        if (!t) continue;
+        if (!t) {
+          notePrivilegeBlank(cont2);
+          continue;
+        }
         const up = t.toUpperCase();
         if (up.startsWith("SUBGROUP:")) {
+          resetPrivilegeContinuation(cont2);
           const title = unescapeText(t.split(":").slice(1).join(":").trim());
           if (title) {
             out.push({ type: "subgroup", text: title });
@@ -388,6 +468,7 @@ textarea::placeholder{color:var(--muted)}
           }
           continue;
         }
+        if (tryAppendPrivilegeContinuation(out, t, cont2)) continue;
         out.push({ type: "privilege", text: t, indent: subgroupActive2 });
       }
       return out;
@@ -396,35 +477,42 @@ textarea::placeholder{color:var(--muted)}
     let i = 0;
     const n = lines.length;
     let subgroupActive = false;
+    const cont = createPrivilegeContinuation();
     while (i < n) {
       const stripped = lines[i].trim();
       if (!stripped) {
+        notePrivilegeBlank(cont);
         i += 1;
         continue;
       }
       const up = stripped.toUpperCase();
       if (up.startsWith("SPECIALTY:")) {
+        resetPrivilegeContinuation(cont);
         blocks.push({ type: "specialty", name: unescapeText(stripped.split(":").slice(1).join(":").trim()) });
         i += 1;
         continue;
       }
       if (up.startsWith("VERSION:")) {
+        resetPrivilegeContinuation(cont);
         blocks.push({ type: "version", date: stripped.split(":").slice(1).join(":").trim() });
         i += 1;
         continue;
       }
       if (up.startsWith("LOGO:")) {
+        resetPrivilegeContinuation(cont);
         blocks.push({ type: "logo", path: stripped.split(":").slice(1).join(":").trim() });
         i += 1;
         continue;
       }
       if (up.startsWith("SECTION:")) {
+        resetPrivilegeContinuation(cont);
         blocks.push({ type: "section", title: unescapeText(stripped.split(":").slice(1).join(":").trim()) });
         subgroupActive = false;
         i += 1;
         continue;
       }
       if (up === "SECTION" || up === "[SECTION]") {
+        resetPrivilegeContinuation(cont);
         subgroupActive = false;
         i += 1;
         while (i < n && !lines[i].trim()) i += 1;
@@ -440,6 +528,7 @@ textarea::placeholder{color:var(--muted)}
         continue;
       }
       if (up.startsWith("QUALIFICATIONS:")) {
+        resetPrivilegeContinuation(cont);
         subgroupActive = false;
         i += 1;
         const [qb, next] = parseQualifications(lines, i);
@@ -448,6 +537,7 @@ textarea::placeholder{color:var(--muted)}
         continue;
       }
       if (up === "QUALIFICATIONS" || up === "[QUALIFICATIONS]") {
+        resetPrivilegeContinuation(cont);
         subgroupActive = false;
         i += 1;
         const [qb, next] = parseQualifications(lines, i);
@@ -456,16 +546,22 @@ textarea::placeholder{color:var(--muted)}
         continue;
       }
       if (up === "PRIVILEGES:" || up === "PRIVILEGES" || up === "[PRIVILEGES]") {
+        resetPrivilegeContinuation(cont);
         subgroupActive = false;
         i += 1;
         continue;
       }
       if (up.startsWith("SUBGROUP:")) {
+        resetPrivilegeContinuation(cont);
         const title = unescapeText(stripped.split(":").slice(1).join(":").trim());
         if (title) {
           blocks.push({ type: "subgroup", text: title });
           subgroupActive = true;
         }
+        i += 1;
+        continue;
+      }
+      if (tryAppendPrivilegeContinuation(blocks, stripped, cont)) {
         i += 1;
         continue;
       }
@@ -495,7 +591,16 @@ textarea::placeholder{color:var(--muted)}
   function emphasizeHtml(text) {
     return String(text).split(/(\s+)/).map((tok) => {
       if (/^(OR|AND|AND\/OR)$/.test(tok)) return `<strong>${tok}</strong>`;
+      if (tok.includes("\n")) return tok.replace(/\n/g, "<br>");
       return escapeHtml(tok);
+    }).join("");
+  }
+  function formatPrivilegeHtml(text) {
+    return String(text).split("\n").map((line) => {
+      if (line.startsWith(ADD_REQ_ITEM_PREFIX)) {
+        return `<span class="addl-req-item">${emphasizeHtml(`- ${line.slice(ADD_REQ_ITEM_PREFIX.length)}`)}</span>`;
+      }
+      return `<span class="priv-line">${emphasizeHtml(line)}</span>`;
     }).join("");
   }
   function escapeHtml(s) {
@@ -516,9 +621,6 @@ textarea::placeholder{color:var(--muted)}
   function monthYearNow() {
     return (/* @__PURE__ */ new Date()).toLocaleString("en-US", { month: "long", year: "numeric" });
   }
-  function nl2br(text) {
-    return escapeHtml(text || "").replace(/\n/g, "<br>");
-  }
   function privilegeHeaderRow() {
     return `<div class="priv-row priv-header">
     <div class="priv-text">Privilege</div>
@@ -531,7 +633,7 @@ textarea::placeholder{color:var(--muted)}
     const detailRows = qualDetailRows(quals).map(
       ([lab, val]) => `<div class="qual-row">
       <div class="qual-label">${escapeHtml(lab)}</div>
-      <div class="qual-value">${nl2br(val)}</div>
+      <div class="qual-value">${emphasizeHtml(val)}</div>
     </div>`
     ).join("");
     return `<section class="dop-section">
@@ -545,7 +647,7 @@ textarea::placeholder{color:var(--muted)}
   function renderPrivilegeRow(text, indent, idx) {
     const indentClass = indent ? " indented" : "";
     return `<div class="priv-row">
-    <div class="priv-text${indentClass}">${emphasizeHtml(text)}</div>
+    <div class="priv-text${indentClass}"><span class="priv-copy">${formatPrivilegeHtml(text)}</span></div>
     <div class="priv-cb"><input type="checkbox" name="NewlyRequested_${idx}" aria-label="Newly requested"></div>
     <div class="priv-cb"><input type="checkbox" name="CurrentlyHeld_${idx}" aria-label="Currently held"></div>
     <div class="priv-cb granted"><input type="checkbox" name="GrantedRenewed_${idx}" aria-label="Granted or renewed"></div>
@@ -553,7 +655,7 @@ textarea::placeholder{color:var(--muted)}
   }
   function renderSubgroupRow(text) {
     return `<div class="priv-row subgroup">
-    <div class="priv-text"><strong>${emphasizeHtml(text)}</strong></div>
+    <div class="priv-text"><span class="priv-copy">${emphasizeHtml(text)}</span></div>
     <div class="priv-cb"></div>
     <div class="priv-cb"></div>
     <div class="priv-cb granted"></div>
@@ -992,25 +1094,52 @@ textarea::placeholder{color:var(--muted)}
     }
     function wrapLines(text, maxW, size) {
       const result = [];
-      for (const seg of text.split("\n")) {
-        const words = seg.split(/\s+/).filter(Boolean);
+      for (const seg of String(text).split("\n")) {
+        const indent = (seg.match(/^ */) || [""])[0];
+        const body = seg.slice(indent.length);
+        const words = body.split(/\s+/).filter(Boolean);
         if (!words.length) {
           result.push("");
           continue;
         }
+        const hang = body.startsWith("- ") ? indent + "  " : indent;
         let cur = [];
+        let prefix = indent;
         for (const w of words) {
-          const trial = [...cur, w].join(" ");
-          if (textWidthWithEmphasis(trial, size, helv) <= maxW) {
+          const content = cur.length ? `${cur.join(" ")} ${w}` : w;
+          const trial = prefix + content;
+          if (textWidthWithEmphasis(trial, size, helv) <= maxW || !cur.length) {
             cur.push(w);
           } else {
-            if (cur.length) result.push(cur.join(" "));
+            result.push(prefix + cur.join(" "));
+            prefix = hang;
             cur = [w];
           }
         }
-        if (cur.length) result.push(cur.join(" "));
+        if (cur.length) result.push(prefix + cur.join(" "));
       }
       return result.length ? result : [""];
+    }
+    const ADD_REQ_ITEM_PREFIX2 = "    - ";
+    const HALF_LINE_GAP = 0.5;
+    function wrapLinesWithItemGaps(text, maxW, size) {
+      const segments = String(text).split("\n");
+      const out = [];
+      for (let i = 0; i < segments.length; i++) {
+        const wrapped = wrapLines(segments[i], maxW, size);
+        const next = segments[i + 1] || "";
+        const gap = segments[i].startsWith(ADD_REQ_ITEM_PREFIX2) && next.startsWith(ADD_REQ_ITEM_PREFIX2) ? HALF_LINE_GAP : 0;
+        wrapped.forEach((line, j) => {
+          out.push({ text: line, gapAfter: j === wrapped.length - 1 ? gap : 0 });
+        });
+      }
+      return out.length ? out : [{ text: "", gapAfter: 0 }];
+    }
+    function wrappedLayoutHeight(items, size) {
+      const leading = size * LINE_H_FACTOR;
+      let h = 0;
+      for (const it of items) h += leading * (1 + it.gapAfter);
+      return h;
     }
     function drawRectPy(page2, x02, pyTop, x12, pyBottom, fillColor, borderColor, borderWidth) {
       const opts = {
@@ -1052,19 +1181,19 @@ textarea::placeholder{color:var(--muted)}
       const iX0 = x02 + hPad;
       const iX1 = x12 - hPad;
       const iW = Math.max(iX1 - iX0, 10);
-      const lines = wrapLines(text, iW, size);
+      const items = wrapLinesWithItemGaps(text, iW, size);
       const leading = size * LINE_H_FACTOR;
-      const textH = lines.length * leading;
+      const textH = wrappedLayoutHeight(items, size);
       const top = pyTop + Math.max(0, (pyBottom - pyTop - textH) / 2);
       let pyBL = top + size;
-      for (const line of lines) {
-        const draw = line || " ";
+      for (const it of items) {
+        const draw = it.text || " ";
         const w = textWidthWithEmphasis(draw, size, defaultFont);
         let x = iX0;
         if (align === 1) x = iX0 + Math.max(0, (iW - w) / 2);
         else if (align === 2) x = Math.max(iX0, iX1 - w);
         drawTextWithEmphasis(page2, x, pyBL, draw, size, defaultFont, color);
-        pyBL += leading;
+        pyBL += leading * (1 + it.gapAfter);
       }
     }
     function drawWrappedText(page2, x02, pyTop, x12, pyBottom, text, size, defaultFont, color, leading, align = 0) {
@@ -1690,8 +1819,8 @@ textarea::placeholder{color:var(--muted)}
         }
         privIdx += 1;
         const iOff = b.indent ? 16 : 0;
-        const lns = wrapLines(b.text, Math.max(20, textW - iOff), QUAL_FONT);
-        const rH = Math.max(HEADER_H, lns.length * QUAL_LEADING + 2 * QUAL_ROW_PAD);
+        const items = wrapLinesWithItemGaps(b.text, Math.max(20, textW - iOff), QUAL_FONT);
+        const rH = Math.max(HEADER_H, wrappedLayoutHeight(items, QUAL_FONT) + 2 * QUAL_ROW_PAD);
         if (y + rH > PAGE_H - BOTTOM_M) {
           pageBreakInSection();
           y = drawPrivHeaderRow(page, y);

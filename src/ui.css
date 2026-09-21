@@ -123,6 +123,9 @@ textarea::placeholder{color:var(--muted)}
 .priv-copy{flex:1;min-width:0}
 .priv-copy strong,.qual-value strong{font-weight:700}
 .priv-line{display:block}
+.priv-line + .addl-req-label{
+  margin-top:0.5em             /* half-line between privilege title and Additional Requirements */
+}
 .addl-req-item{
   display:block;
   margin-left:1.11em;          /* ~4 spaces at body size */

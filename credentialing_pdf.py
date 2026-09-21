@@ -581,17 +581,23 @@ def wrap_lines(text: str, max_w: float, fontsize: float) -> list[str]:
 
 
 def wrap_lines_with_item_gaps(text: str, max_w: float, fontsize: float) -> list[tuple[str, float]]:
-    """Like wrap_lines, with a half-line gap between dashed additional-requirement items."""
+    """Like wrap_lines, with half-line gaps for additional-requirement layout.
+
+    Inserts HALF_LINE_GAP:
+    - between the privilege title and the "Additional Requirements:" label
+    - between consecutive dashed additional-requirement items
+    """
     segments = text.split("\n")
     out: list[tuple[str, float]] = []
     for i, segment in enumerate(segments):
         wrapped = wrap_lines(segment, max_w, fontsize)
         nxt = segments[i + 1] if i + 1 < len(segments) else ""
-        gap = (
-            HALF_LINE_GAP
-            if segment.startswith(ADD_REQ_ITEM_PREFIX) and nxt.startswith(ADD_REQ_ITEM_PREFIX)
-            else 0.0
-        )
+        gap = 0.0
+        if _is_additional_requirements(nxt):
+            # Half-line between privilege text and "Additional Requirements:"
+            gap = HALF_LINE_GAP
+        elif segment.startswith(ADD_REQ_ITEM_PREFIX) and nxt.startswith(ADD_REQ_ITEM_PREFIX):
+            gap = HALF_LINE_GAP
         for j, line in enumerate(wrapped):
             extra = gap if j == len(wrapped) - 1 else 0.0
             out.append((line, extra))

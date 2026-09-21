@@ -166,6 +166,57 @@ def _unescape(s: str) -> str:
     return s.replace("\\\\n", "\n").replace("\\n", "\n")
 
 
+_CONNECTOR_RE = re.compile(r"^(OR|AND|AND/OR)(?:\s|$)")
+
+
+def _is_additional_requirements(stripped: str) -> bool:
+    return stripped.lower().startswith("additional requirements:")
+
+
+def _starts_with_connector(stripped: str) -> bool:
+    return bool(_CONNECTOR_RE.match(stripped))
+
+
+class _PrivilegeContinuation:
+    """Attach Additional Requirements / OR / AND / AND/OR lines to the prior privilege."""
+
+    def __init__(self) -> None:
+        self.active = False
+        self.pending_blank = False
+        self.waiting_body = False
+
+    def reset(self) -> None:
+        self.active = False
+        self.pending_blank = False
+        self.waiting_body = False
+
+    def note_blank(self) -> None:
+        if self.active:
+            self.pending_blank = True
+
+    def try_append(self, blocks: list[DocBlock], stripped: str) -> bool:
+        if not blocks or not isinstance(blocks[-1], PrivilegeLine):
+            self.reset()
+            return False
+        last = blocks[-1]
+        if _is_additional_requirements(stripped):
+            value = stripped.split(":", 1)[1].strip() if ":" in stripped else ""
+            text = last.text + ("\n\n" if last.text else "") + _unescape(stripped)
+            blocks[-1] = PrivilegeLine(text, last.indent)
+            self.active = True
+            self.waiting_body = not value
+            self.pending_blank = False
+            return True
+        if self.active and (self.waiting_body or _starts_with_connector(stripped)):
+            sep = "\n\n" if self.pending_blank else "\n"
+            blocks[-1] = PrivilegeLine(last.text + sep + _unescape(stripped), last.indent)
+            self.waiting_body = False
+            self.pending_blank = False
+            return True
+        self.reset()
+        return False
+
+
 def parse_document(text: str) -> list[DocBlock]:
     # User-authored blank-line token: "<Blank>" (case-insensitive).
     # - If used on its own line, it becomes exactly one blank line.
@@ -196,16 +247,21 @@ def parse_document(text: str) -> list[DocBlock]:
     if not has_section and not has_qual:
         out: list[DocBlock] = []
         subgroup_active = False
+        cont = _PrivilegeContinuation()
         for s in lines:
             t = s.strip()
             if not t:
+                cont.note_blank()
                 continue
             up_t = t.upper()
             if up_t.startswith("SUBGROUP:"):
+                cont.reset()
                 subgroup_title = _unescape(t.split(":", 1)[1].strip())
                 if subgroup_title:
                     out.append(SubgroupLine(subgroup_title))
                     subgroup_active = True
+                continue
+            if cont.try_append(out, t):
                 continue
             out.append(PrivilegeLine(t, indent=subgroup_active))
         return out
@@ -214,6 +270,7 @@ def parse_document(text: str) -> list[DocBlock]:
     i = 0
     n = len(lines)
     subgroup_active = False
+    cont = _PrivilegeContinuation()
 
     def parse_qualifications(start: int) -> tuple[QualificationsBlock, int]:
         fields: dict[str, str] = {"e": "", "c": "", "n": "", "r": ""}
@@ -295,28 +352,34 @@ def parse_document(text: str) -> list[DocBlock]:
         line = lines[i]
         stripped = line.strip()
         if not stripped:
+            cont.note_blank()
             i += 1
             continue
 
         up = stripped.upper()
         if up.startswith("SPECIALTY:"):
+            cont.reset()
             blocks.append(SpecialtyBlock(_unescape(stripped.split(":", 1)[1].strip())))
             i += 1
             continue
         if up.startswith("VERSION:"):
+            cont.reset()
             blocks.append(VersionBlock(stripped.split(":", 1)[1].strip()))
             i += 1
             continue
         if up.startswith("LOGO:"):
+            cont.reset()
             blocks.append(LogoBlock(stripped.split(":", 1)[1].strip()))
             i += 1
             continue
         if up.startswith("SECTION:"):
+            cont.reset()
             blocks.append(SectionBlock(_unescape(stripped.split(":", 1)[1].strip())))
             subgroup_active = False
             i += 1
             continue
         if up in ("SECTION", "[SECTION]"):
+            cont.reset()
             subgroup_active = False
             i += 1
             while i < n and not lines[i].strip():
@@ -334,26 +397,34 @@ def parse_document(text: str) -> list[DocBlock]:
                 blocks.append(SectionBlock(_unescape(" ".join(parts))))
             continue
         if up.startswith("QUALIFICATIONS:"):
+            cont.reset()
             subgroup_active = False
             i += 1
             qb, i = parse_qualifications(i)
             blocks.append(qb)
             continue
         if up in ("QUALIFICATIONS", "[QUALIFICATIONS]"):
+            cont.reset()
             subgroup_active = False
             i += 1
             qb, i = parse_qualifications(i)
             blocks.append(qb)
             continue
         if up in ("PRIVILEGES:", "PRIVILEGES", "[PRIVILEGES]"):
+            cont.reset()
             subgroup_active = False
             i += 1   # visual marker only — no block created, just skip
             continue
         if up.startswith("SUBGROUP:"):
+            cont.reset()
             subgroup_title = _unescape(stripped.split(":", 1)[1].strip())
             if subgroup_title:
                 blocks.append(SubgroupLine(subgroup_title))
                 subgroup_active = True
+            i += 1
+            continue
+
+        if cont.try_append(blocks, stripped):
             i += 1
             continue
 

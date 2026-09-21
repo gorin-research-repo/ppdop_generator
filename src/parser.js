@@ -12,6 +12,60 @@ export function unescapeText(s) {
   return s.replace(/\\\\n/g, "\n").replace(/\\n/g, "\n");
 }
 
+export function isAdditionalRequirementsLine(stripped) {
+  return stripped.toLowerCase().startsWith("additional requirements:");
+}
+
+export function startsWithConnector(stripped) {
+  return /^(OR|AND|AND\/OR)(?:\s|$)/.test(stripped);
+}
+
+function additionalRequirementsValue(stripped) {
+  const idx = stripped.indexOf(":");
+  return idx === -1 ? "" : stripped.slice(idx + 1).trim();
+}
+
+function createPrivilegeContinuation() {
+  return { active: false, pendingBlank: false, waitingBody: false };
+}
+
+function notePrivilegeBlank(state) {
+  if (state.active) state.pendingBlank = true;
+}
+
+function resetPrivilegeContinuation(state) {
+  state.active = false;
+  state.pendingBlank = false;
+  state.waitingBody = false;
+}
+
+function tryAppendPrivilegeContinuation(blocks, stripped, state) {
+  const last = blocks[blocks.length - 1];
+  if (!last || last.type !== "privilege") {
+    resetPrivilegeContinuation(state);
+    return false;
+  }
+
+  if (isAdditionalRequirementsLine(stripped)) {
+    const value = additionalRequirementsValue(stripped);
+    last.text += (last.text ? "\n\n" : "") + unescapeText(stripped);
+    state.active = true;
+    state.waitingBody = !value;
+    state.pendingBlank = false;
+    return true;
+  }
+
+  if (state.active && (state.waitingBody || startsWithConnector(stripped))) {
+    last.text += (state.pendingBlank ? "\n\n" : "\n") + unescapeText(stripped);
+    state.waitingBody = false;
+    state.pendingBlank = false;
+    return true;
+  }
+
+  resetPrivilegeContinuation(state);
+  return false;
+}
+
 function parseQualifications(lines, start) {
   const fields = { e: "", c: "", n: "", r: "" };
   let current = null;
@@ -107,11 +161,16 @@ export function parseDocument(text) {
   if (!hasSection && !hasQual) {
     const out = [];
     let subgroupActive = false;
+    const cont = createPrivilegeContinuation();
     for (const s of lines) {
       const t = s.trim();
-      if (!t) continue;
+      if (!t) {
+        notePrivilegeBlank(cont);
+        continue;
+      }
       const up = t.toUpperCase();
       if (up.startsWith("SUBGROUP:")) {
+        resetPrivilegeContinuation(cont);
         const title = unescapeText(t.split(":").slice(1).join(":").trim());
         if (title) {
           out.push({ type: "subgroup", text: title });
@@ -119,6 +178,7 @@ export function parseDocument(text) {
         }
         continue;
       }
+      if (tryAppendPrivilegeContinuation(out, t, cont)) continue;
       out.push({ type: "privilege", text: t, indent: subgroupActive });
     }
     return out;
@@ -128,37 +188,44 @@ export function parseDocument(text) {
   let i = 0;
   const n = lines.length;
   let subgroupActive = false;
+  const cont = createPrivilegeContinuation();
 
   while (i < n) {
     const stripped = lines[i].trim();
     if (!stripped) {
+      notePrivilegeBlank(cont);
       i += 1;
       continue;
     }
     const up = stripped.toUpperCase();
 
     if (up.startsWith("SPECIALTY:")) {
+      resetPrivilegeContinuation(cont);
       blocks.push({ type: "specialty", name: unescapeText(stripped.split(":").slice(1).join(":").trim()) });
       i += 1;
       continue;
     }
     if (up.startsWith("VERSION:")) {
+      resetPrivilegeContinuation(cont);
       blocks.push({ type: "version", date: stripped.split(":").slice(1).join(":").trim() });
       i += 1;
       continue;
     }
     if (up.startsWith("LOGO:")) {
+      resetPrivilegeContinuation(cont);
       blocks.push({ type: "logo", path: stripped.split(":").slice(1).join(":").trim() });
       i += 1;
       continue;
     }
     if (up.startsWith("SECTION:")) {
+      resetPrivilegeContinuation(cont);
       blocks.push({ type: "section", title: unescapeText(stripped.split(":").slice(1).join(":").trim()) });
       subgroupActive = false;
       i += 1;
       continue;
     }
     if (up === "SECTION" || up === "[SECTION]") {
+      resetPrivilegeContinuation(cont);
       subgroupActive = false;
       i += 1;
       while (i < n && !lines[i].trim()) i += 1;
@@ -174,6 +241,7 @@ export function parseDocument(text) {
       continue;
     }
     if (up.startsWith("QUALIFICATIONS:")) {
+      resetPrivilegeContinuation(cont);
       subgroupActive = false;
       i += 1;
       const [qb, next] = parseQualifications(lines, i);
@@ -182,6 +250,7 @@ export function parseDocument(text) {
       continue;
     }
     if (up === "QUALIFICATIONS" || up === "[QUALIFICATIONS]") {
+      resetPrivilegeContinuation(cont);
       subgroupActive = false;
       i += 1;
       const [qb, next] = parseQualifications(lines, i);
@@ -190,16 +259,23 @@ export function parseDocument(text) {
       continue;
     }
     if (up === "PRIVILEGES:" || up === "PRIVILEGES" || up === "[PRIVILEGES]") {
+      resetPrivilegeContinuation(cont);
       subgroupActive = false;
       i += 1;
       continue;
     }
     if (up.startsWith("SUBGROUP:")) {
+      resetPrivilegeContinuation(cont);
       const title = unescapeText(stripped.split(":").slice(1).join(":").trim());
       if (title) {
         blocks.push({ type: "subgroup", text: title });
         subgroupActive = true;
       }
+      i += 1;
+      continue;
+    }
+
+    if (tryAppendPrivilegeContinuation(blocks, stripped, cont)) {
       i += 1;
       continue;
     }
@@ -235,6 +311,7 @@ export function emphasizeHtml(text) {
     .split(/(\s+)/)
     .map((tok) => {
       if (/^(OR|AND|AND\/OR)$/.test(tok)) return `<strong>${tok}</strong>`;
+      if (tok.includes("\n")) return tok.replace(/\n/g, "<br>");
       return escapeHtml(tok);
     })
     .join("");

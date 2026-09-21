@@ -1,5 +1,4 @@
 import { parseDocument, qualDetailRows, emphasizeHtml, escapeHtml } from "./parser.js";
-
 export const COVER_INSTRUCTIONS =
   "Please check the box beside each clinical privilege being requested. Applicants are required to produce information deemed necessary by the center in order to properly evaluate current competence, current clinical activity, and other privileging requirements.";
 
@@ -22,10 +21,6 @@ function monthYearNow() {
   return new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
 }
 
-function nl2br(text) {
-  return escapeHtml(text || "").replace(/\n/g, "<br>");
-}
-
 function privilegeHeaderRow() {
   return `<div class="priv-row priv-header">
     <div class="priv-text">Privilege</div>
@@ -40,7 +35,7 @@ function renderSectionTable(title, quals, rowsHtml) {
     .map(
       ([lab, val]) => `<div class="qual-row">
       <div class="qual-label">${escapeHtml(lab)}</div>
-      <div class="qual-value">${nl2br(val)}</div>
+      <div class="qual-value">${emphasizeHtml(val)}</div>
     </div>`,
     )
     .join("");
@@ -57,7 +52,7 @@ function renderSectionTable(title, quals, rowsHtml) {
 function renderPrivilegeRow(text, indent, idx) {
   const indentClass = indent ? " indented" : "";
   return `<div class="priv-row">
-    <div class="priv-text${indentClass}">${emphasizeHtml(text)}</div>
+    <div class="priv-text${indentClass}"><span class="priv-copy">${emphasizeHtml(text)}</span></div>
     <div class="priv-cb"><input type="checkbox" name="NewlyRequested_${idx}" aria-label="Newly requested"></div>
     <div class="priv-cb"><input type="checkbox" name="CurrentlyHeld_${idx}" aria-label="Currently held"></div>
     <div class="priv-cb granted"><input type="checkbox" name="GrantedRenewed_${idx}" aria-label="Granted or renewed"></div>
@@ -66,7 +61,7 @@ function renderPrivilegeRow(text, indent, idx) {
 
 function renderSubgroupRow(text) {
   return `<div class="priv-row subgroup">
-    <div class="priv-text"><strong>${emphasizeHtml(text)}</strong></div>
+    <div class="priv-text"><span class="priv-copy">${emphasizeHtml(text)}</span></div>
     <div class="priv-cb"></div>
     <div class="priv-cb"></div>
     <div class="priv-cb granted"></div>

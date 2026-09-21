@@ -120,6 +120,8 @@ textarea::placeholder{color:var(--muted)}
 .priv-row.priv-header{background:var(--pp-header);font-weight:700;font-size:10px;text-align:center}
 .priv-row.priv-header .priv-text{text-align:left;padding-left:12px}
 .priv-text{padding:7px 12px;font-size:11px;border-right:1px solid var(--pp-stroke);display:flex;align-items:center}
+.priv-copy{flex:1;min-width:0}
+.priv-copy strong,.qual-value strong{font-weight:700}
 .priv-text.indented{padding-left:28px}
 .priv-cb{
   display:flex;align-items:center;justify-content:center;padding:4px 2px;border-right:1px solid var(--pp-stroke);

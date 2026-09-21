@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { parseDocument, qualDetailRows, emphasizeHtml } from "../src/parser.js";
+import { parseDocument, qualDetailRows, emphasizeHtml, formatPrivilegeHtml } from "../src/parser.js";
 import { renderDocument } from "../src/render.js";
 import { buildCredentialingPdf } from "../src/pdf.js";
 
@@ -100,9 +100,11 @@ test("anesthesiology DOP keeps pediatric additional requirements on one privileg
 
   const pediatric = privileges.find((b) => b.text.startsWith("Provide anesthesia care to patients <2 months of age"));
   assert.ok(pediatric, "missing <2 months privilege");
-  assert.match(pediatric.text, /Additional Requirements:/);
-  assert.match(pediatric.text, /\n\nOR An equivalent as set forth in the Medical Staff Bylaws\./);
-  assert.match(pediatric.text, /\n\nAND Current certification in Pediatric Advanced Life Support/);
+  assert.match(pediatric.text, /^Provide anesthesia care to patients <2 months of age\nAdditional Requirements:/);
+  assert.match(pediatric.text, /\n    - Successful completion of an ACGME-/);
+  assert.match(pediatric.text, /\n    - OR An equivalent as set forth in the Medical Staff Bylaws\./);
+  assert.match(pediatric.text, /\n    - AND Current certification in Pediatric Advanced Life Support/);
+  assert.doesNotMatch(pediatric.text, /\n\n    - /);
   assert.equal(
     privileges.filter((b) => /Additional Requirements:|Pediatric Advanced Life Support/.test(b.text)).length,
     1,
@@ -112,8 +114,10 @@ test("anesthesiology DOP keeps pediatric additional requirements on one privileg
   assert.equal(meta.specialty, "Anesthesiology (Physician)");
   assert.equal(meta.privilegeCount, 8);
   assert.match(html, /<strong>AND\/OR<\/strong>/);
+  assert.match(html, /class="addl-req-item"/);
   assert.match(html, /<strong>AND<\/strong> Current certification in Pediatric Advanced Life Support/);
   assert.match(html, /&lt;2 months of age/);
+  assert.match(formatPrivilegeHtml(pediatric.text), /class="addl-req-item"/);
 });
 
 test("emphasizeHtml bolds connectors and preserves paragraph breaks", () => {

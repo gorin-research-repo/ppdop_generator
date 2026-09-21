@@ -20,9 +20,33 @@ export function startsWithConnector(stripped) {
   return /^(OR|AND|AND\/OR)(?:\s|$)/.test(stripped);
 }
 
+export const ADD_REQ_ITEM_PREFIX = "    - ";
+
 function additionalRequirementsValue(stripped) {
   const idx = stripped.indexOf(":");
   return idx === -1 ? "" : stripped.slice(idx + 1).trim();
+}
+
+function additionalRequirementsLabel(stripped) {
+  const idx = stripped.indexOf(":");
+  const label = (idx === -1 ? stripped : stripped.slice(0, idx)).trim();
+  return `${label}:`;
+}
+
+function formatAdditionalRequirementItem(stripped) {
+  const body = unescapeText(stripped).replace(/^[-–—]\s+/, "");
+  return ADD_REQ_ITEM_PREFIX + body;
+}
+
+function isDashedItem(stripped) {
+  return /^[-–—]\s+/.test(stripped);
+}
+
+function isAdditionalRequirementContinuation(stripped, state) {
+  if (!state.active) return false;
+  if (state.waitingBody) return true;
+  const body = stripped.replace(/^[-–—]\s+/, "");
+  return startsWithConnector(stripped) || startsWithConnector(body) || isDashedItem(stripped);
 }
 
 function createPrivilegeContinuation() {
@@ -48,15 +72,16 @@ function tryAppendPrivilegeContinuation(blocks, stripped, state) {
 
   if (isAdditionalRequirementsLine(stripped)) {
     const value = additionalRequirementsValue(stripped);
-    last.text += (last.text ? "\n\n" : "") + unescapeText(stripped);
+    last.text += (last.text ? "\n" : "") + additionalRequirementsLabel(stripped);
+    if (value) last.text += "\n" + formatAdditionalRequirementItem(value);
     state.active = true;
     state.waitingBody = !value;
     state.pendingBlank = false;
     return true;
   }
 
-  if (state.active && (state.waitingBody || startsWithConnector(stripped))) {
-    last.text += (state.pendingBlank ? "\n\n" : "\n") + unescapeText(stripped);
+  if (isAdditionalRequirementContinuation(stripped, state)) {
+    last.text += "\n" + formatAdditionalRequirementItem(stripped);
     state.waitingBody = false;
     state.pendingBlank = false;
     return true;
@@ -313,6 +338,19 @@ export function emphasizeHtml(text) {
       if (/^(OR|AND|AND\/OR)$/.test(tok)) return `<strong>${tok}</strong>`;
       if (tok.includes("\n")) return tok.replace(/\n/g, "<br>");
       return escapeHtml(tok);
+    })
+    .join("");
+}
+
+/** Privilege text with dashed, indented additional-requirement items. */
+export function formatPrivilegeHtml(text) {
+  return String(text)
+    .split("\n")
+    .map((line) => {
+      if (line.startsWith(ADD_REQ_ITEM_PREFIX)) {
+        return `<span class="addl-req-item">${emphasizeHtml(`- ${line.slice(ADD_REQ_ITEM_PREFIX.length)}`)}</span>`;
+      }
+      return `<span class="priv-line">${emphasizeHtml(line)}</span>`;
     })
     .join("");
 }

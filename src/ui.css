@@ -122,6 +122,15 @@ textarea::placeholder{color:var(--muted)}
 .priv-text{padding:7px 12px;font-size:11px;border-right:1px solid var(--pp-stroke);display:flex;align-items:center}
 .priv-copy{flex:1;min-width:0}
 .priv-copy strong,.qual-value strong{font-weight:700}
+.priv-line{display:block}
+.addl-req-item{
+  display:block;
+  margin-left:1.11em;          /* ~4 spaces at body size */
+  padding-left:1.2em;
+  text-indent:-1.2em;          /* hanging dash */
+  margin-top:0.5em             /* half-line gap between items; tighter than header <Blank> */
+}
+.priv-line + .addl-req-item{margin-top:0.2em}
 .priv-text.indented{padding-left:28px}
 .priv-cb{
   display:flex;align-items:center;justify-content:center;padding:4px 2px;border-right:1px solid var(--pp-stroke);

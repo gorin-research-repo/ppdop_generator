@@ -167,6 +167,9 @@ def _unescape(s: str) -> str:
 
 
 _CONNECTOR_RE = re.compile(r"^(OR|AND|AND/OR)(?:\s|$)")
+_DASH_ITEM_RE = re.compile(r"^[-–—]\s+")
+ADD_REQ_ITEM_PREFIX = "    - "
+HALF_LINE_GAP = 0.5
 
 
 def _is_additional_requirements(stripped: str) -> bool:
@@ -175,6 +178,20 @@ def _is_additional_requirements(stripped: str) -> bool:
 
 def _starts_with_connector(stripped: str) -> bool:
     return bool(_CONNECTOR_RE.match(stripped))
+
+
+def _format_additional_requirement_item(stripped: str) -> str:
+    body = _DASH_ITEM_RE.sub("", _unescape(stripped), count=1)
+    return ADD_REQ_ITEM_PREFIX + body
+
+
+def _is_add_req_continuation(stripped: str, *, active: bool, waiting_body: bool) -> bool:
+    if not active:
+        return False
+    if waiting_body:
+        return True
+    body = _DASH_ITEM_RE.sub("", stripped, count=1)
+    return _starts_with_connector(stripped) or _starts_with_connector(body) or bool(_DASH_ITEM_RE.match(stripped))
 
 
 class _PrivilegeContinuation:
@@ -201,15 +218,20 @@ class _PrivilegeContinuation:
         last = blocks[-1]
         if _is_additional_requirements(stripped):
             value = stripped.split(":", 1)[1].strip() if ":" in stripped else ""
-            text = last.text + ("\n\n" if last.text else "") + _unescape(stripped)
+            label = stripped.split(":", 1)[0].strip() + ":"
+            text = last.text + ("\n" if last.text else "") + label
+            if value:
+                text = text + "\n" + _format_additional_requirement_item(value)
             blocks[-1] = PrivilegeLine(text, last.indent)
             self.active = True
-            self.waiting_body = not value
+            self.waiting_body = not bool(value)
             self.pending_blank = False
             return True
-        if self.active and (self.waiting_body or _starts_with_connector(stripped)):
-            sep = "\n\n" if self.pending_blank else "\n"
-            blocks[-1] = PrivilegeLine(last.text + sep + _unescape(stripped), last.indent)
+        if _is_add_req_continuation(stripped, active=self.active, waiting_body=self.waiting_body):
+            blocks[-1] = PrivilegeLine(
+                last.text + "\n" + _format_additional_requirement_item(stripped),
+                last.indent,
+            )
             self.waiting_body = False
             self.pending_blank = False
             return True
@@ -499,14 +521,13 @@ def _vcenter_insert(
     inner_x0 = cell.x0 + h_pad
     inner_x1 = cell.x1 - h_pad
     inner_w = max(inner_x1 - inner_x0, 10)
-    lines = wrap_lines(text, inner_w, fontsize)
-    n = max(1, len(lines))
+    items = wrap_lines_with_item_gaps(text, inner_w, fontsize)
     leading = fontsize * LINE_H_FACTOR
-    text_h = n * leading
+    text_h = _wrapped_layout_height(items, fontsize)
     top = cell.y0 + max(0.0, (cell.height - text_h) / 2)
     baseline = top + fontsize
 
-    for line in lines:
+    for line, extra in items:
         draw = line if line else " "
         w = _text_width_with_emphasis(draw, fontsize, fontname)
         if align == 1:
@@ -519,34 +540,67 @@ def _vcenter_insert(
             page,
             x,
             baseline,
-           draw,
+            draw,
             fontsize=fontsize,
             default_font=fontname,
             color=color,
         )
-        baseline += leading
+        baseline += leading * (1.0 + extra)
 
 
 def wrap_lines(text: str, max_w: float, fontsize: float) -> list[str]:
-    """Word-wrap text to fit max_w. Hard \\n in the string forces a line break."""
+    """Word-wrap text to fit max_w. Hard \\n in the string forces a line break.
+
+    Leading spaces are preserved. Lines that start with "- " after indent wrap
+    with a hanging indent so continuation lines align under the item text.
+    """
     result: list[str] = []
     for segment in text.split("\n"):
-        words = segment.split()
+        indent_len = len(segment) - len(segment.lstrip(" "))
+        indent = segment[:indent_len]
+        body = segment[indent_len:]
+        words = body.split()
         if not words:
             result.append("")
             continue
+        hang = indent + "  " if body.startswith("- ") else indent
         cur: list[str] = []
+        prefix = indent
         for w in words:
-            trial = " ".join(cur + [w])
-            if _text_width_with_emphasis(trial, fontsize, "helv") <= max_w:
+            content = " ".join(cur + [w]) if cur else w
+            trial = prefix + content
+            if _text_width_with_emphasis(trial, fontsize, "helv") <= max_w or not cur:
                 cur.append(w)
             else:
-                if cur:
-                    result.append(" ".join(cur))
+                result.append(prefix + " ".join(cur))
+                prefix = hang
                 cur = [w]
         if cur:
-            result.append(" ".join(cur))
+            result.append(prefix + " ".join(cur))
     return result if result else [""]
+
+
+def wrap_lines_with_item_gaps(text: str, max_w: float, fontsize: float) -> list[tuple[str, float]]:
+    """Like wrap_lines, with a half-line gap between dashed additional-requirement items."""
+    segments = text.split("\n")
+    out: list[tuple[str, float]] = []
+    for i, segment in enumerate(segments):
+        wrapped = wrap_lines(segment, max_w, fontsize)
+        nxt = segments[i + 1] if i + 1 < len(segments) else ""
+        gap = (
+            HALF_LINE_GAP
+            if segment.startswith(ADD_REQ_ITEM_PREFIX) and nxt.startswith(ADD_REQ_ITEM_PREFIX)
+            else 0.0
+        )
+        for j, line in enumerate(wrapped):
+            extra = gap if j == len(wrapped) - 1 else 0.0
+            out.append((line, extra))
+    return out or [("", 0.0)]
+
+
+def _wrapped_layout_height(items: list[tuple[str, float]], fontsize: float) -> float:
+    leading = fontsize * LINE_H_FACTOR
+    return sum(leading * (1.0 + extra) for _, extra in items)
 
 
 def draw_wrapped_text(
@@ -1421,8 +1475,8 @@ def build_pdf(
             priv_idx += 1
             indent_offset = 16 if b.indent else 0
             row_text_w = max(20, text_w - indent_offset)
-            lines = wrap_lines(b.text, row_text_w, QUAL_FONT)
-            row_h = max(HEADER_H, len(lines) * QUAL_LEADING + 2 * QUAL_ROW_PAD)
+            items = wrap_lines_with_item_gaps(b.text, row_text_w, QUAL_FONT)
+            row_h = max(HEADER_H, _wrapped_layout_height(items, QUAL_FONT) + 2 * QUAL_ROW_PAD)
 
             if y + row_h > PAGE_H - BOTTOM_M:
                 _page_break_in_section()

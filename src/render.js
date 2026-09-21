@@ -1,4 +1,4 @@
-import { parseDocument, qualDetailRows, emphasizeHtml, escapeHtml } from "./parser.js";
+import { parseDocument, qualDetailRows, emphasizeHtml, formatPrivilegeHtml, escapeHtml } from "./parser.js";
 export const COVER_INSTRUCTIONS =
   "Please check the box beside each clinical privilege being requested. Applicants are required to produce information deemed necessary by the center in order to properly evaluate current competence, current clinical activity, and other privileging requirements.";
 
@@ -52,7 +52,7 @@ function renderSectionTable(title, quals, rowsHtml) {
 function renderPrivilegeRow(text, indent, idx) {
   const indentClass = indent ? " indented" : "";
   return `<div class="priv-row">
-    <div class="priv-text${indentClass}"><span class="priv-copy">${emphasizeHtml(text)}</span></div>
+    <div class="priv-text${indentClass}"><span class="priv-copy">${formatPrivilegeHtml(text)}</span></div>
     <div class="priv-cb"><input type="checkbox" name="NewlyRequested_${idx}" aria-label="Newly requested"></div>
     <div class="priv-cb"><input type="checkbox" name="CurrentlyHeld_${idx}" aria-label="Currently held"></div>
     <div class="priv-cb granted"><input type="checkbox" name="GrantedRenewed_${idx}" aria-label="Granted or renewed"></div>

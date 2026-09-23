@@ -82,11 +82,11 @@ test("built HTML script parses without duplicate-binding errors", () => {
   assert.doesNotThrow(() => new Function(match[1]));
 });
 
-test("anesthesiology DOP keeps pediatric additional requirements on one privilege", () => {
+test("anesthesiology DOP keeps age-band additional requirements on the correct privileges", () => {
   const sample = readFileSync(join(root, "privileges_anesthesiology.txt"), "utf8");
   const blocks = parseDocument(sample);
   assert.ok(blocks.some((b) => b.type === "specialty" && b.name === "Anesthesiology (Physician)"));
-  assert.ok(blocks.some((b) => b.type === "version" && b.date === "September 21, 2026"));
+  assert.ok(blocks.some((b) => b.type === "version" && b.date === "September 23, 2026"));
 
   const quals = blocks.find((b) => b.type === "qualifications");
   assert.match(quals.educationTraining, /\n\nOR An equivalent as set forth in the Medical Staff Bylaws\./);
@@ -96,31 +96,68 @@ test("anesthesiology DOP keeps pediatric additional requirements on one privileg
   assert.match(quals.newPrivilege, /\n\nOR Successful completion of an ACGME-/);
 
   const privileges = blocks.filter((b) => b.type === "privilege");
-  assert.equal(privileges.length, 8);
+  assert.equal(privileges.length, 9);
 
-  const pediatric = privileges.find((b) => b.text.startsWith("Provide anesthesia care to patients <2 months of age"));
-  assert.ok(pediatric, "missing <2 months privilege");
-  assert.match(pediatric.text, /^Provide anesthesia care to patients <2 months of age\nAdditional Requirements:/);
-  assert.match(pediatric.text, /\n    - Successful completion of an ACGME-/);
-  assert.match(pediatric.text, /\n    - OR An equivalent as set forth in the Medical Staff Bylaws\./);
-  assert.match(pediatric.text, /\n    - AND Current certification in Pediatric Advanced Life Support/);
-  assert.doesNotMatch(pediatric.text, /\n\n    - /);
+  const infant = privileges.find((b) =>
+    b.text.startsWith("Provide anesthesia care to patients 2 months to less than 24 months of age"),
+  );
+  assert.ok(infant, "missing 2 months to <24 months privilege");
+  assert.match(
+    infant.text,
+    /^Provide anesthesia care to patients 2 months to less than 24 months of age\.\nAdditional Requirements:/,
+  );
+  assert.match(infant.text, /\n    - Successful completion of an ACGME-/);
+  assert.match(infant.text, /\n    - OR An equivalent as set forth in the Medical Staff Bylaws\./);
+  assert.match(infant.text, /\n    - AND Current certification in Pediatric Advanced Life Support/);
+  assert.doesNotMatch(infant.text, /\n\n    - /);
+
+  const child = privileges.find((b) =>
+    b.text.startsWith("Provide anesthesia care to patients 2 years to less than 13 years of age"),
+  );
+  assert.ok(child, "missing 2 years to <13 years privilege");
+  assert.match(
+    child.text,
+    /^Provide anesthesia care to patients 2 years to less than 13 years of age\.\nAdditional Requirements:/,
+  );
+  assert.match(child.text, /\n    - Current certification in Pediatric Advanced Life Support/);
+  assert.doesNotMatch(child.text, /fellowship in pediatric anesthesiology/);
+
+  const teenAdult = privileges.find((b) =>
+    b.text.startsWith("Provide anesthesia care to patients 13 years of age and older"),
+  );
+  assert.ok(teenAdult, "missing 13 years and older privilege");
+  assert.equal(teenAdult.text, "Provide anesthesia care to patients 13 years of age and older.");
+  assert.doesNotMatch(teenAdult.text, /Additional Requirements:/);
+
   assert.equal(
-    privileges.filter((b) => /Additional Requirements:|Pediatric Advanced Life Support/.test(b.text)).length,
-    1,
+    privileges.filter((b) => /Additional Requirements:/.test(b.text)).length,
+    2,
+  );
+  assert.equal(
+    privileges.filter((b) => /Pediatric Advanced Life Support/.test(b.text)).length,
+    2,
+  );
+  assert.doesNotMatch(
+    privileges.map((b) => b.text).join("\n"),
+    /<2 months of age|2 months of age and older/,
   );
 
   const { html, meta } = renderDocument(sample);
   assert.equal(meta.specialty, "Anesthesiology (Physician)");
-  assert.equal(meta.privilegeCount, 8);
+  assert.equal(meta.privilegeCount, 9);
   assert.match(html, /<strong>AND\/OR<\/strong>/);
   assert.match(html, /class="addl-req-item"/);
   assert.match(html, /class="priv-line addl-req-label"/);
+  assert.match(html, /2 months to less than 24 months of age/);
+  assert.match(html, /2 years to less than 13 years of age/);
+  assert.match(html, /13 years of age and older/);
   assert.match(html, /<strong>AND<\/strong> Current certification in Pediatric Advanced Life Support/);
-  assert.match(html, /&lt;2 months of age/);
-  const privHtml = formatPrivilegeHtml(pediatric.text);
-  assert.match(privHtml, /class="addl-req-item"/);
-  assert.match(privHtml, /class="priv-line addl-req-label"/);
+  const infantHtml = formatPrivilegeHtml(infant.text);
+  assert.match(infantHtml, /class="addl-req-item"/);
+  assert.match(infantHtml, /class="priv-line addl-req-label"/);
+  const childHtml = formatPrivilegeHtml(child.text);
+  assert.match(childHtml, /class="addl-req-item"/);
+  assert.match(childHtml, /PALS/);
 });
 
 test("emphasizeHtml bolds connectors and preserves paragraph breaks", () => {

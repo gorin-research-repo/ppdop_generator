@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privileging Requirements Guide — PeakPoint Central Nassau Surgery Center</title>
+<style>
+  :root{
+    /* Brand: green #268b6b, grey #495566 */
+    --green:#268b6b; --green-d:#1c6b52; --slate:#495566; --slate-l:#5a6678;
+    --ink:#1f2733; --muted:#6b7684; --line:#e2e7ee; --bg:#f4f6f9;
+    --card:#ffffff; --amber:#b7791f; --amber-bg:#fdf6e7; --blue-bg:#eef4fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--green-d);text-decoration:none;border-bottom:1px solid rgba(38,139,107,.4)}
+  a:hover{border-bottom-color:var(--green-d)}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px 24px}
+  header{background:var(--card);border-bottom:1px solid var(--line)}
+  .head-inner{max-width:900px;margin:0 auto;padding:28px 20px;display:flex;align-items:center;justify-content:center}
+  .logo{display:flex;align-items:center;justify-content:center}
+  .logo img{height:88px;width:auto;display:block}
+  @media(max-width:560px){.logo img{height:64px}}
+  h1{font-size:20px;margin:26px 0 4px;font-weight:700}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 22px;margin-bottom:18px;
+    box-shadow:0 1px 2px rgba(20,30,50,.03)}
+  .step.dim{opacity:.45;pointer-events:none}
+  .step.hidden{display:none}
+  .step-h{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+  .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;font-size:13px;
+    font-weight:700;display:flex;align-items:center;justify-content:center}
+  .step-h h2{font-size:15px;margin:0;font-weight:700}
+  label.fld{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+  select{width:100%;padding:12px 14px;font-size:15px;border:1px solid #cdd5e0;border-radius:9px;background:#fff;color:var(--ink);appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7684' stroke-width='2.4'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 14px center;cursor:pointer}
+  select:disabled{background-color:#f1f3f6;color:#9aa4b1;cursor:not-allowed}
+  select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(38,139,107,.18)}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{flex:1;min-width:150px;position:relative}
+  .opt input{position:absolute;opacity:0;inset:0;cursor:pointer;margin:0}
+  .opt span{display:block;text-align:center;padding:11px 8px;border:1px solid #cdd5e0;border-radius:9px;font-size:14px;
+    font-weight:600;color:var(--slate-l);cursor:pointer;transition:.12s;background:#fff}
+  .opt input:checked+span{border-color:var(--green);background:var(--green);color:#fff;box-shadow:0 1px 4px rgba(38,139,107,.28)}
+  .opt input:disabled+span{opacity:.5;cursor:not-allowed}
+  .opt input:focus-visible+span{box-shadow:0 0 0 3px rgba(38,139,107,.22)}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:9px}
+  .blocks{display:flex;flex-direction:column;gap:9px}
+  .blk{display:flex;align-items:flex-start;gap:11px;border:1px solid #d7dee8;border-radius:10px;padding:12px 14px;cursor:pointer;transition:.12s}
+  .blk:hover{border-color:var(--green)}
+  .blk input{margin:2px 0 0;width:17px;height:17px;accent-color:var(--green);cursor:pointer;flex:none}
+  .blk .bt{font-weight:600;font-size:14.5px}
+  .blk .bd{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+  button.go{background:var(--green);color:#fff;border:none;border-radius:9px;padding:13px 26px;font-size:15px;font-weight:700;cursor:pointer;transition:.12s}
+  button.go:hover{background:var(--green-d)}
+  button.ghost{background:#fff;color:var(--slate);border:1px solid #cdd5e0;border-radius:9px;padding:13px 20px;font-size:14px;font-weight:600;cursor:pointer}
+  button.ghost:hover{border-color:var(--slate-l)}
+  #results{margin-top:8px}
+  .summary{background:var(--slate);color:#fff;border-radius:13px;padding:18px 20px;margin-bottom:16px}
+  .summary .s1{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+  .summary .s2{font-size:18px;font-weight:700;margin-top:2px}
+  .summary .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .pill{background:rgba(255,255,255,.14);border-radius:20px;padding:5px 13px;font-size:12.5px;font-weight:600}
+  .pill.amber{background:var(--amber);color:#fff}
+  .rblock{background:var(--card);border:1px solid var(--line);border-radius:13px;margin-bottom:14px;overflow:hidden}
+  .rblock>.rh{background:var(--green);color:#fff;padding:12px 18px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .rh .rtag{background:rgba(255,255,255,.2);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;flex:none}
+  .rbody{padding:16px 18px}
+  .sec-t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+  ul.docs{list-style:none;margin:0;padding:0}
+  ul.docs li{position:relative;padding:8px 0 8px 26px;font-size:14px;border-bottom:1px solid #f0f2f6}
+  ul.docs li:last-child{border-bottom:none}
+  ul.docs li:before{content:"";position:absolute;left:2px;top:11px;width:15px;height:15px;border:2px solid var(--green);border-radius:4px}
+  .note{background:var(--amber-bg);border:1px solid #f0e0b8;border-radius:9px;padding:10px 13px;font-size:12.5px;color:#7a5a12;margin-top:12px;display:flex;gap:8px}
+  .foot{font-size:12px;color:var(--muted);margin-top:18px;line-height:1.6}
+  .disclaimer{background:#fff;border:1px dashed #cdd5e0;border-radius:10px;padding:13px 16px;font-size:12.5px;color:var(--muted);margin-top:6px}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:20px;line-height:1.6}
+  .site-footer{background:var(--card);border-top:1px solid var(--line)}
+  .site-footer .foot-inner{max-width:900px;margin:0 auto;padding:14px 20px;text-align:center;font-size:12.5px;color:var(--muted)}
+  .site-footer .handle{font-weight:600;color:var(--slate)}
+  .site-footer .foot-sep{color:#c5ccd6}
+  .site-footer a.foot-link{color:var(--slate);font-weight:600;border-bottom-color:rgba(73,85,102,.35)}
+  .site-footer a.foot-link:hover{color:var(--green-d);border-bottom-color:var(--green-d)}
+  @media print{
+    body{background:#fff}
+    header,.step,.disclaimer,.actions,#printbtn{display:none!important}
+    #results{margin-top:0}
+    .rblock,.summary{box-shadow:none}
+    h1{display:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <div class="logo">
+      <img id="brandlogo" src="assets/logo.png" alt="PeakPoint Central Nassau Surgery Center">
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>Clinical Privileging Requirements Guide</h1>
+  <p class="sub">Select provider type, specialty (when applicable), and the privilege blocks being requested to see the exact documentation required.</p>
+
+  <div class="step" id="s1">
+    <div class="step-h"><div class="num">1</div><h2>Provider type</h2></div>
+    <div class="opts" style="max-width:720px">
+      <label class="opt"><input type="radio" name="ptype" value="surgeon"><span>Surgeon</span></label>
+      <label class="opt"><input type="radio" name="ptype" value="pa"><span>Physician Assistant</span></label>
+      <label class="opt"><input type="radio" name="ptype" value="anesthesia"><span>Anesthesia Provider</span></label>
+    </div>
+  </div>
+
+  <div class="step dim" id="s2">
+    <div class="step-h"><div class="num" id="s2num">2</div><h2 id="s2title">Choose a specialty</h2></div>
+    <label class="fld" for="spec" id="speclabel">Specialty</label>
+    <select id="spec" disabled><option value="">— Select a specialty —</option></select>
+    <p class="hint" id="specnote" style="display:none"></p>
+  </div>
+
+  <div class="step dim" id="s3">
+    <div class="step-h"><div class="num" id="s3num">3</div><h2>Is this new credentialing or recredentialing?</h2></div>
+    <div class="opts" style="max-width:420px">
+      <label class="opt"><input type="radio" name="credtype" value="new"><span>New credentialing</span></label>
+      <label class="opt"><input type="radio" name="credtype" value="recred"><span>Recredentialing</span></label>
+    </div>
+  </div>
+
+  <div class="step dim" id="s4">
+    <div class="step-h"><div class="num" id="s4num">4</div><h2 id="s4title">Completed an accredited residency or fellowship in the last 12 months?</h2></div>
+    <div class="opts" style="max-width:420px">
+      <label class="opt"><input type="radio" name="trained" value="yes"><span>Yes</span></label>
+      <label class="opt"><input type="radio" name="trained" value="no"><span>No</span></label>
+    </div>
+    <p class="hint" id="trainedhint">If the provider finished the qualifying residency or fellowship within the past 12 months, the new-privilege case-log minimum is met by that training instead. This applies to new credentialing only.</p>
+  </div>
+
+  <div class="step dim" id="s5">
+    <div class="step-h"><div class="num" id="s5num">5</div><h2>Select the privilege blocks being requested</h2></div>
+    <div class="blocks" id="blocklist"></div>
+    <div class="actions" style="margin-top:16px">
+      <button class="go" id="genbtn">Show requirements</button>
+      <button class="ghost" id="resetbtn">Reset</button>
+    </div>
+  </div>
+
+  <div id="results"></div>
+  <div id="printbtn"></div>
+
+  <div class="disclaimer" id="disc" style="display:none">
+    This site is intended to help providers understand the requirements for completing a credentialing application at PeakPoint Central Nassau Surgery Center. It is a planning aid only and does not itself grant privileges. All privileges remain subject to the applicable Medical Staff Bylaws and Policies, and final determinations are made by the Medical Executive Committee and Governing Board.
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="foot-inner">
+    <span class="handle">@michael_Gorin</span><span class="foot-sep"> / </span><a class="foot-link" href="https://augmentedmd.tools">@augmentedMD</a><span class="foot-sep"> / </span><a class="foot-link" href="admin.html">Admin</a>
+  </div>
+</footer>
+
+<script>
+/* External files: DOPs in dops/, case logs in case-logs/, forms in forms/, logo in assets/.
+   When a document filename or version date changes, update the matching entry on admin.html
+   and add a dated entry to the Document Change Log there. */
+const DOP_BASE = "dops/";
+const CASE_LOG_BASE = "case-logs/";
+const FORMS_BASE = "forms/";
+const PEAK_URL = "https://peak.mountsinai.org/";
+const PEAK_LINK = '<a href="'+PEAK_URL+'" target="_blank" rel="noopener">PEAK / Mount Sinai intranet</a>';
+const HEALTH_ASSESSMENT = "Annual_Health_Assessment.pdf";
+const PHYSICAL_EXAM = "Physical_Examination_Form.pdf";
+
+const DOP_FORM = {
+  podiatry:"Podiatry_April_30_2026.pdf",
+  urology:"Urology_May_6_2026_FINAL.pdf",
+  gyn:"Gyn_May_6_2026_FINAL.pdf",
+  pain:"Pain_Medicine_May_6_2026_FINAL.pdf",
+  plastic:"Plastic_Surgery_May_6_2026_FINAL.pdf",
+  ophthalmology:"Optho_May_6_2026_FINAL.pdf",
+  ortho:"Ortho_May_6_2026.pdf",
+  gen_surg:"Gen_Surg_May_6_2026_FINAL.pdf",
+  gi:"GI_May_20_2026_FINAL.pdf",
+  ent:"ENT_May_6_2026_FINAL.pdf",
+  pa:"PA_Aug_4_2026.pdf",
+  anesthesia_physician:"Anesthesia_Physician_Sept_23_2026.pdf",
+  anesthesia_crna:"Anesthesia_CRNA_May_18_2026_FINAL.pdf"
+};
+
+const CASE_LOG = {
+  podiatry:"PODIATRY_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  urology:"UROLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  gyn:"GYNECOLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  pain:"PAIN_MEDICINE_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  plastic:"PLASTIC_SURGERY_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  ophthalmology:"OPHTHALMOLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  ortho:"ORTHOPEDICS_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  gen_surg:"GENERAL_SURGERY_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  gi:"GI_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  ent:"OTOLARYNGOLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx",
+  pa:"PA_CASE_LOG_TEMPLATE_August_13_2026.xlsx",
+  anesthesia_physician:"ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_Sept_23_2026.xlsx",
+  anesthesia_crna:"ANESTHESIA_(CRNA)_CASE_LOG_TEMPLATE_July_8_2026.xlsx"
+};
+
+function assetLink(folder, file, text){
+  if(!file) return text;
+  return '<a href="'+folder+encodeURI(file)+'" target="_blank" rel="noopener">'+text+'</a>';
+}
+
+const COURSE = {
+  fluoroscopy:{
+    edu:"Approved residency or fellowship that included training in fluoroscopy and radiation-safety principles.",
+    newLines:["Certificate of completion of the “Radiation Safety in Fluoroscopy for Operators” course ("+PEAK_LINK+"), or an MEC-approved equivalent, within 12 months of initial credentialing."],
+    renLines:["Certificate of “Radiation Safety in Fluoroscopy for Operators” course completion ("+PEAK_LINK+") within 12 months of recredentialing."]
+  },
+  laser:{
+    edu:"Approved residency in a specialty/subspecialty that included training in laser principles.",
+    newLines:[
+      "Certificate 1 — Laser Safety course (appropriate to your discipline), via "+PEAK_LINK+", within 12 months of initial credentialing.",
+      "Certificate 2 — Surgical Fire Safety course (separate certificate), via "+PEAK_LINK+", within 12 months of initial credentialing.",
+      "Or MEC-approved equivalents for both courses."
+    ],
+    renLines:[
+      "Certificate 1 — Laser Safety course completion ("+PEAK_LINK+") within 12 months of recredentialing.",
+      "Certificate 2 — Surgical Fire Safety course completion (separate certificate, "+PEAK_LINK+") within 12 months of recredentialing."
+    ]
+  },
+  chemo:{
+    edu:"Approved residency that included training in the administration of chemotherapy/biotherapy.",
+    newLines:["Certificate of completion of the Mount Sinai Chemotherapy and Biotherapy Safety Course ("+PEAK_LINK+"), or an MEC-approved equivalent, within 12 months of initial credentialing."],
+    renLines:["Certificate of Chemotherapy and Biotherapy Safety Course completion ("+PEAK_LINK+") within 12 months of recredentialing."]
+  }
+};
+function courseBlock(name,key,extra){const c=COURSE[key];return {name,type:"course",edu:c.edu,newLines:c.newLines,renLines:c.renLines,special:extra||null};}
+
+/* Course blocks for PAs use PA-form wording (meet general PA criteria). */
+function paCourseBlock(name,key){
+  const c=COURSE[key];
+  return {
+    name, type:"course",
+    edu:"Applicant must meet the criteria for general PA privileges.",
+    cert:"Applicant must meet the criteria for general PA privileges.",
+    newLines:c.newLines, renLines:c.renLines
+  };
+}
+
+const DATA = {
+  podiatry:{
+    label:"Podiatry", version:"April 30, 2026",
+    blocks:[
+      {name:"Podiatry — Core Privileges", type:"clinical", core:true, unit:"podiatric procedures",
+        edu:"CPME-accredited 24-month podiatric surgical residency.",
+        cert:"Board certification (or board-eligible, certified within 5 yrs of training) in foot surgery by ABFAS or the American Board of Podiatric Medicine. Maintenance of Certification required unless legacy.",
+        trainAlt:"Completion of a CPME-accredited podiatric surgery residency within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}},
+      {name:"Standard Ankle Surgery", type:"clinical", unit:"standard ankle surgeries",
+        edu:"Meet the criteria for core podiatry privileges.",
+        special:"Must hold standard ankle surgery privileges granted by the State of New York.",
+        trainAlt:"Completion of a CPME-accredited podiatric surgery residency within the past 12 months.",
+        newMin:{n:2,m:12}, renMin:{n:6,m:36}, prereq:"core podiatry privileges"},
+      {name:"Advanced Ankle Surgery", type:"clinical", unit:"advanced ankle surgeries",
+        edu:"Meet the criteria for core podiatry privileges.",
+        special:"Must hold advanced ankle surgery privileges granted by the State of New York.",
+        trainAlt:"Completion of a CPME-accredited podiatric surgery residency within the past 12 months.",
+        newMin:{n:5,m:12}, renMin:{n:15,m:36}, prereq:"core podiatry privileges"}
+    ]
+  },
+  urology:{
+    label:"Urology", version:"May 6, 2026",
+    blocks:[
+      {name:"Urology — Core Privileges", type:"clinical", core:true, unit:"urological procedures",
+        edu:"ACGME- or AOA-accredited residency in urology.",
+        cert:"Certification (or board-eligible, certified within 5 yrs) in urology by the American Board of Urology or the American Osteopathic Board of Surgery (Urological Surgery). MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}},
+      {name:"Point of Care Ultrasound (POCUS)", type:"clinical", unit:"POCUS procedures",
+        edu:"Approved residency/fellowship that included POCUS training; practice limited to documented POCUS procedures within the specialty.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:5,m:12}, renMin:{n:15,m:36}, prereq:"core urology privileges"},
+      courseBlock("Fluoroscopy","fluoroscopy"),
+      courseBlock("Use of Laser","laser"),
+      courseBlock("Administration of Chemotherapy and Biotherapy","chemo")
+    ]
+  },
+  gyn:{
+    label:"Gynecology", version:"May 6, 2026",
+    blocks:[
+      {name:"Gynecology — Core Privileges", type:"clinical", core:true, unit:"gynecological surgeries",
+        edu:"ACGME- or AOA-accredited residency in obstetrics and gynecology.",
+        cert:"Certification (or board-eligible, certified within 5 yrs) in obstetrics and gynecology by the American Board of Obstetrics and Gynecology or the American Osteopathic Board of Obstetrics and Gynecology. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}},
+      {name:"Urogynecology & Reconstructive Pelvic Surgery", type:"clinical", unit:"female pelvic medicine & reconstructive surgical procedures",
+        edu:"Meet core gynecology criteria AND complete a fellowship in female pelvic medicine and reconstructive surgery / urogynecology.",
+        cert:"Subspecialty certification (or board-eligible, certified within 5 yrs) in FPMRS by ABOG or AOBOG.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:12,m:12}, renMin:{n:36,m:36}, prereq:"core gynecology privileges"},
+      courseBlock("Use of Laser","laser")
+    ]
+  },
+  pain:{
+    label:"Pain Medicine", version:"May 6, 2026",
+    blocks:[
+      {name:"Pain Medicine — Core Privileges", type:"clinical", core:true, unit:"pain medicine procedures",
+        edu:"ACGME- or AOA-accredited fellowship in pain medicine.",
+        cert:"Subspecialty certification (or board-eligible, within 5 yrs) in pain medicine by ABA, ABPN, or ABPMR; AND certification (or board-eligible, within 5 yrs) by the American Board of Pain Medicine. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited fellowship within the past 12 months.",
+        newMin:{n:24,m:12}, renMin:{n:72,m:36}},
+      courseBlock("Fluoroscopy","fluoroscopy")
+    ]
+  },
+  plastic:{
+    label:"Plastic Surgery", version:"May 6, 2026",
+    blocks:[
+      {name:"Plastic Surgery — Core Privileges", type:"clinical", core:true, unit:"plastic surgeries",
+        edu:"ACGME- or AOA-accredited residency in plastic surgery.",
+        cert:"Certification (or board-eligible, within 5 yrs) in plastic surgery by the American Board of Plastic Surgery or the American Osteopathic Board of Surgery (Plastic and Reconstructive Surgery). MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}},
+      {name:"Pediatric Craniomaxillofacial Surgery", type:"clinical", unit:"pediatric craniomaxillofacial surgeries",
+        edu:"Meet core plastic surgery criteria AND complete a one-year fellowship in pediatric craniomaxillofacial surgery.",
+        cert:"Certification (or board-eligible, within 5 yrs) in plastic surgery by ABPS or AOBS (Plastic and Reconstructive Surgery).",
+        trainAlt:"Completion of fellowship training within the past 12 months.",
+        newMin:{n:12,m:12}, renMin:{n:36,m:36}, prereq:"core plastic surgery privileges"},
+      {name:"Advanced Hand Surgery", type:"clinical", unit:"advanced hand surgeries",
+        edu:"Meet core plastic surgery criteria AND complete a one-year fellowship in hand surgery.",
+        cert:"Certification in plastic surgery by ABPS or AOBS; AND a Certificate of Advanced Qualification (CAQ) in Hand Surgery. MOC required unless legacy.",
+        trainAlt:"Completion of fellowship training within the past 12 months.",
+        newMin:{n:12,m:12}, renMin:{n:36,m:36}, prereq:"core plastic surgery privileges"},
+      courseBlock("Use of Laser","laser")
+    ]
+  },
+  ophthalmology:{
+    label:"Ophthalmology", version:"May 6, 2026",
+    blocks:[
+      {name:"Ophthalmology — Core Privileges", type:"clinical", core:true, unit:"ophthalmology procedures",
+        edu:"ACGME- or AOA-accredited residency in ophthalmology.",
+        cert:"Certification (or board-eligible, within 5 yrs) in ophthalmology by the American Board of Ophthalmology or the American Osteopathic Board of Ophthalmology and Otolaryngology — Head and Neck Surgery. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency within the past 12 months.",
+        newMin:{n:10,m:12}, renMin:{n:30,m:36}},
+      courseBlock("Use of Laser","laser","Required for the standard-laser procedures listed in the ophthalmology core block (peripheral iridotomy, trabeculoplasty, capsulotomy, pan-retinal / focal macular photocoagulation, laser suture lysis, retinopexy)."),
+      {name:"Femtosecond-laser Assisted Cataract Surgery", type:"clinical", unit:"femtosecond-laser assisted cataract surgeries",
+        edu:"Meet core ophthalmology privileges.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"miCOR-assisted Cataract Surgery", type:"clinical", unit:"miCOR-assisted cataract surgeries",
+        edu:"Meet core ophthalmology privileges.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Implantable Collamer Lens (ICL) Surgery", type:"clinical", unit:"ICL surgeries",
+        edu:"Meet core ophthalmology privileges.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Schlemm's Canal Surgery", type:"clinical", unit:"Schlemm's canal surgeries",
+        edu:"Meet core ophthalmology privileges.",
+        special:"Additional certification for one or more specific devices/procedures: Trabectome, iStent, Kahook Dual Blade Goniotomy, Hydrus Microstent, Omni surgical system, or iTrack Advance.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Ab interno Aqueous Micro Shunt (Xen Gel Stent)", type:"clinical", unit:"Xen Gel Stent procedures",
+        edu:"Meet core ophthalmology privileges.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Advanced Corneal Surgery", type:"clinical", unit:"advanced corneal surgeries",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in corneal surgery.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:2,m:12}, renMin:{n:6,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Intralase-enabled Keratoplasty (IEK)", type:"clinical", unit:"IEK procedures",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in corneal surgery.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Advanced Glaucoma Surgery", type:"clinical", unit:"advanced glaucoma surgeries",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in glaucoma surgery.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:2,m:12}, renMin:{n:6,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Keratorefractive Surgery", type:"clinical", unit:"keratorefractive surgeries",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in keratorefractive or corneal surgery.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Advanced Oculoplastic Surgery", type:"clinical", unit:"advanced oculoplastic surgeries",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in oculoplastic surgery.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:2,m:12}, renMin:{n:6,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Retina and Vitreous Surgery", type:"clinical", unit:"retina and vitreous surgeries",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in vitreo-retinal surgery.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:2,m:12}, renMin:{n:6,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Retinal Exam & Treatment for Retinopathy of Prematurity (ROP)", type:"clinical", unit:"ROP procedures",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in vitreoretinal diseases or pediatric ophthalmology that included ROP retinal-exam training.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Pediatric / Adolescent Glaucoma Surgery", type:"clinical", unit:"pediatric/adolescent glaucoma surgeries",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in glaucoma or pediatric ophthalmology that included pediatric glaucoma surgery training.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"},
+      {name:"Pediatric Cataract Surgery", type:"clinical", unit:"pediatric/adolescent cataract surgeries",
+        edu:"Meet core ophthalmology privileges AND complete a fellowship in pediatric ophthalmology that included pediatric cataract surgery training.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:1,m:12}, renMin:{n:3,m:36}, prereq:"core ophthalmology privileges"}
+    ]
+  },
+  ortho:{
+    label:"Orthopedic Surgery", version:"May 6, 2026",
+    blocks:[
+      {name:"Orthopedic Surgery — Core Privileges", type:"clinical", core:true, unit:"orthopedic surgical procedures",
+        edu:"ACGME- or AOA-accredited residency in orthopedic surgery.",
+        cert:"Certification (or board-eligible, within 5 yrs) in orthopedic surgery by the American Board of Orthopaedic Surgery or the American Osteopathic Board of Orthopedic Surgery. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:35,m:12}, renMin:{n:105,m:36}},
+      {name:"Hand Surgery", type:"clinical", unit:"hand surgeries",
+        edu:"ACGME-/AOA-accredited residency in orthopedic surgery AND an accredited fellowship in hand surgery.",
+        cert:"Certification in orthopedic surgery by ABOS or AOBOS; AND subspecialty certification in Surgery of the Hand (SSH) through ABOS (or board-eligible within 5 yrs). MOC required unless legacy.",
+        trainAlt:"Completion of fellowship training within the past 12 months.",
+        newMin:{n:40,m:12}, renMin:{n:120,m:36}, prereq:"core orthopedic privileges"},
+      {name:"Spine Surgery", type:"clinical", unit:"spine surgeries",
+        edu:"ACGME-/AOA-accredited residency in orthopedic surgery AND an ACGME-/AOA-accredited fellowship in pediatric orthopedics or orthopedic surgery of the spine.",
+        cert:"Certification (or board-eligible, within 5 yrs) in orthopedic surgery by ABOS or AOBOS. MOC required unless legacy.",
+        trainAlt:"Completion of fellowship training within the past 12 months.",
+        newMin:{n:20,m:12}, renMin:{n:60,m:36}, prereq:"core orthopedic privileges"},
+      courseBlock("Fluoroscopy","fluoroscopy")
+    ]
+  },
+  gen_surg:{
+    label:"General Surgery", version:"May 6, 2026",
+    blocks:[
+      {name:"General Surgery — Core Privileges", type:"clinical", core:true, unit:"general surgery procedures",
+        edu:"ACGME- or AOA-accredited residency in general surgery.",
+        cert:"Certification (or board-eligible, within 5 yrs) in general surgery by the American Board of Surgery or the American Osteopathic Board of Surgery. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}},
+      {name:"Excision of Thyroglossal Duct and Branchial Cleft Cysts", type:"clinical", unit:"procedures",
+        edu:"Meet the criteria for core general surgery privileges.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:2,m:12}, renMin:{n:6,m:36}, prereq:"core general surgery privileges"},
+      {name:"Endoscopic Surgery", type:"clinical", unit:"endoscopic procedures",
+        edu:"Meet the criteria for core general surgery privileges.",
+        cert:"Certification (or board-eligible, within 5 yrs) in general surgery by ABS or AOBS. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}, prereq:"core general surgery privileges"},
+      {name:"Breast Disease", type:"clinical", unit:"breast disease procedures",
+        edu:"ACGME- or AOA-accredited residency in general surgery.",
+        cert:"Certification (or board-eligible, within 5 yrs) in general surgery by ABS or AOBS. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}, prereq:"core general surgery privileges"},
+      {name:"Breast Reconstruction", type:"clinical", unit:"breast reconstruction procedures",
+        edu:"Meet the criteria for Breast Disease privileges.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:10,m:12}, renMin:{n:30,m:36}, prereq:"Breast Disease privileges"},
+      {name:"Point of Care Ultrasound (POCUS)", type:"clinical", unit:"POCUS procedures",
+        edu:"Approved residency/fellowship that included training in POCUS principles.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:15,m:36}, renMin:{n:15,m:36}, prereq:"core general surgery privileges"}
+    ]
+  },
+  gi:{
+    label:"Gastroenterology", version:"May 20, 2026",
+    blocks:[
+      {name:"Gastroenterology — Core Privileges", type:"clinical", core:true, unit:"gastroenterology procedures",
+        edu:"ACGME- or AOA-accredited fellowship in gastroenterology.",
+        cert:"Certification (or board-eligible, within 5 yrs) in gastroenterology by the American Board of Internal Medicine, or Certificate of Special Qualifications in gastroenterology by the American Osteopathic Board of Internal Medicine. MOC required unless legacy.",
+        trainAlt:"Completion of fellowship training within the past 12 months.",
+        newMin:{n:50,m:12}, renMin:{n:150,m:36}},
+      courseBlock("Fluoroscopy","fluoroscopy"),
+      courseBlock("Use of Laser","laser")
+    ]
+  },
+  ent:{
+    label:"Otolaryngology", version:"May 6, 2026",
+    blocks:[
+      {name:"Otolaryngology — Core Privileges", type:"clinical", core:true, unit:"otolaryngology surgeries",
+        edu:"ACGME- or AOA-accredited residency in otolaryngology.",
+        cert:"Certification (or board-eligible, within 5 yrs) in otolaryngology by the American Board of Otolaryngology or the American Osteopathic Board of Ophthalmology and Otolaryngology — Head and Neck Surgery. MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:25,m:12}, renMin:{n:75,m:36}},
+      {name:"Neurotology", type:"clinical", unit:"neurotology procedures",
+        edu:"Meet core otolaryngology criteria AND complete a fellowship in neurotology.",
+        cert:"Subspecialty certification (or board-eligible, within 5 yrs) in neurotology by the American Board of Otolaryngology.",
+        trainAlt:"Completion of fellowship training within the past 12 months.",
+        newMin:{n:15,m:12}, renMin:{n:45,m:36}, prereq:"core otolaryngology privileges"},
+      {name:"Plastic and Reconstructive Surgery", type:"clinical", unit:"plastic and reconstructive surgeries",
+        edu:"ACGME- or AOA-accredited residency in otolaryngology that included training in plastic and reconstructive surgery.",
+        cert:"Certification (or board-eligible, within 5 yrs) in otolaryngology (as above). MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:3,m:12}, renMin:{n:9,m:36}, prereq:"core otolaryngology privileges"},
+      {name:"Craniomaxillofacial Trauma", type:"clinical", unit:"craniomaxillofacial trauma surgeries",
+        edu:"ACGME- or AOA-accredited residency in otolaryngology that included training in craniomaxillofacial trauma.",
+        cert:"Certification (or board-eligible, within 5 yrs) in otolaryngology (as above). MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:2,m:12}, renMin:{n:6,m:36}, prereq:"core otolaryngology privileges"},
+      courseBlock("Use of Laser","laser"),
+      courseBlock("Administration of Chemotherapy and Biotherapy","chemo")
+    ]
+  },
+  pa:{
+    label:"Physician Assistant", version:"August 4, 2026",
+    blocks:[
+      {name:"General Privileges", type:"clinical", core:true, unit:"perioperative patients",
+        edu:"Completion of an educational program approved by ARC-PA or CAAHEP.",
+        cert:"Current NY State PA licensure; AND current NCCPA certification.",
+        trainAlt:"Successful completion of a master's degree leading to certification as a physician assistant or PA residency program in the past 12 months.",
+        newMin:{n:30,m:12}, renMin:{n:90,m:36}},
+      {name:"Operative First Assist Privileges", type:"clinical", unit:"surgical first-assist procedures",
+        edu:"Applicant must meet the criteria for general PA privileges.",
+        cert:"Applicant must meet the criteria for general PA privileges.",
+        trainAlt:"Successful completion of a master's degree leading to certification as a physician assistant or PA residency program in the past 12 months.",
+        newMin:{n:30,m:12}, renMin:{n:90,m:36}, prereq:"general PA privileges"},
+      paCourseBlock("Fluoroscopy","fluoroscopy"),
+      paCourseBlock("Use of Laser","laser")
+    ]
+  },
+  anesthesia_physician:{
+    label:"Anesthesiology — Physician (MD or DO)", version:"September 23, 2026",
+    blocks:[
+      {name:"Anesthesia care — patients 2 months to less than 24 months of age", type:"clinical", unit:"anesthesia encounters",
+        edu:"ACGME- or AOA-accredited residency in anesthesiology.",
+        cert:"Certification (or board-eligible, within 5 yrs) in anesthesiology by the American Board of Anesthesiology or the American Osteopathic Board of Anesthesiology; AND current ACLS (American Heart Association); AND/OR current PeRLS (American Society of Anesthesiology). MOC required unless legacy.",
+        special:"Successful completion of an ACGME- or AOA-accredited fellowship in pediatric anesthesiology (or an equivalent as set forth in the Medical Staff Bylaws); AND current certification in Pediatric Advanced Life Support (PALS) by The American Heart Association.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:50,m:12}, renMin:{n:150,m:36}},
+      {name:"Anesthesia care — patients 2 years to less than 13 years of age", type:"clinical", unit:"anesthesia encounters",
+        edu:"ACGME- or AOA-accredited residency in anesthesiology.",
+        cert:"Certification (or board-eligible, within 5 yrs) in anesthesiology by the American Board of Anesthesiology or the American Osteopathic Board of Anesthesiology; AND current ACLS (American Heart Association); AND/OR current PeRLS (American Society of Anesthesiology). MOC required unless legacy.",
+        special:"Current certification in Pediatric Advanced Life Support (PALS) by The American Heart Association.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:50,m:12}, renMin:{n:150,m:36}},
+      {name:"Anesthesia care — patients 13 years of age and older", type:"clinical", unit:"anesthesia encounters",
+        edu:"ACGME- or AOA-accredited residency in anesthesiology.",
+        cert:"Certification (or board-eligible, within 5 yrs) in anesthesiology by the American Board of Anesthesiology or the American Osteopathic Board of Anesthesiology; AND current ACLS (American Heart Association); AND/OR current PeRLS (American Society of Anesthesiology). MOC required unless legacy.",
+        trainAlt:"Completion of an ACGME-/AOA-accredited residency or fellowship within the past 12 months.",
+        newMin:{n:50,m:12}, renMin:{n:150,m:36}}
+    ]
+  },
+  anesthesia_crna:{
+    label:"Anesthesiology — CRNA", version:"May 18, 2026",
+    blocks:[
+      {name:"Anesthesia by a CRNA", type:"clinical", unit:"anesthesia encounters",
+        edu:"Graduate of a nurse-anesthesia program accredited by the Council on Accreditation of Nurse Anesthesia Educational Programs (or its successor).",
+        cert:"Active RN license/registration in New York State; AND current certification by the NBCRNA; AND current BLS (AHA); AND current ACLS (AHA).",
+        trainAlt:"Completion of an accredited nurse-anesthesia training program within the past 12 months.",
+        newMin:{n:50,m:12}, renMin:{n:150,m:36}}
+    ]
+  }
+};
+
+const PROVIDERS = {
+  surgeon:{
+    label:"Surgeon",
+    step2:"specialty",
+    specialties:["gen_surg","gi","gyn","ent","ortho","ophthalmology","plastic","podiatry","urology","pain"]
+  },
+  pa:{
+    label:"Physician Assistant",
+    step2:"none",
+    fixedSpec:"pa"
+  },
+  anesthesia:{
+    label:"Anesthesia Provider",
+    step2:"anesthesia_track",
+    specialties:["anesthesia_physician","anesthesia_crna"]
+  }
+};
+
+const ANESTHESIA_OPTS = {
+  anesthesia_physician:"Physician (MD or DO)",
+  anesthesia_crna:"CRNA"
+};
+
+const state={ptype:"",spec:"",cred:"",trained:"",blocks:new Set()};
+const $=id=>document.getElementById(id);
+const specSel=$("spec");
+
+function showTrainingStep(){
+  return state.cred === "new";
+}
+
+function renumberSteps(){
+  const p=PROVIDERS[state.ptype];
+  const showS2 = p && p.step2 !== "none";
+  const showS4 = showTrainingStep();
+  let n = 2;
+  if(showS2){ $("s2num").textContent=String(n++); }
+  $("s3num").textContent=String(n++);
+  if(showS4){ $("s4num").textContent=String(n++); }
+  $("s5num").textContent=String(n);
+}
+
+function configureTrainingCopy(){
+  /* PA DOP exact training alternate (New Privilege):
+     "Successful completion of a master's degree leading to certification as a
+      physician assistant or PA residency program in the past 12 months." */
+  if(state.ptype==="pa"){
+    $("s4title").textContent="Successful completion of a master's degree leading to certification as a physician assistant or PA residency program in the past 12 months?";
+    $("trainedhint").textContent="Per the PA Delineation of Privileges form, successful completion of a master's degree leading to certification as a physician assistant or PA residency program in the past 12 months satisfies the new-privilege case-log requirement. Answer Yes if this applies.";
+  }else if(state.ptype==="anesthesia"){
+    $("s4title").textContent="Completed accredited anesthesia training in the last 12 months?";
+    $("trainedhint").textContent="If the provider finished the qualifying residency, fellowship, or nurse-anesthesia program within the past 12 months, the new-privilege case-log minimum is met by that training instead. This applies to new credentialing only.";
+  }else{
+    $("s4title").textContent="Completed an accredited residency or fellowship in the last 12 months?";
+    $("trainedhint").textContent="If the provider finished the qualifying residency or fellowship within the past 12 months, the new-privilege case-log minimum is met by that training instead. This applies to new credentialing only.";
+  }
+}
+
+function configureStep2(){
+  const p=PROVIDERS[state.ptype];
+  const s2=$("s2");
+  const note=$("specnote");
+  note.style.display="none";
+  note.textContent="";
+
+  configureTrainingCopy();
+
+  if(!p || p.step2==="none"){
+    s2.classList.add("hidden");
+    return;
+  }
+  s2.classList.remove("hidden");
+
+  if(p.step2==="anesthesia_track"){
+    $("s2title").textContent="Physician (MD or DO) vs. CRNA";
+    $("speclabel").textContent="Provider category";
+    specSel.innerHTML='<option value="">— Select Physician or CRNA —</option>';
+  }else{
+    $("s2title").textContent="Choose a specialty";
+    $("speclabel").textContent="Specialty";
+    specSel.innerHTML='<option value="">— Select a specialty —</option>';
+  }
+}
+
+function renderSpecialties(){
+  const p=PROVIDERS[state.ptype];
+  configureStep2();
+  renumberSteps();
+
+  if(!p){
+    specSel.disabled=true;
+    return;
+  }
+
+  if(p.step2==="none"){
+    state.spec=p.fixedSpec || "";
+    specSel.disabled=true;
+    return;
+  }
+
+  specSel.disabled=false;
+  p.specialties.forEach(k=>{
+    const o=document.createElement("option");
+    o.value=k;
+    if(p.step2==="anesthesia_track"){
+      o.textContent=ANESTHESIA_OPTS[k] || DATA[k].label;
+    }else{
+      o.textContent=DATA[k].label+(DATA[k].pending?"  (form pending)":"");
+    }
+    specSel.appendChild(o);
+  });
+}
+
+function blockDesc(b){
+  if(b.type==="course") return "Course-based privilege — no case log";
+  if(state.cred==="recred") return "Renewal: log of "+b.renMin.n+" case"+(b.renMin.n===1?"":"s")+" in "+b.renMin.m+" months";
+  if(state.cred==="new" && state.trained==="yes") return "No case log required (recent training)";
+  return "New: log of "+b.newMin.n+" case"+(b.newMin.n===1?"":"s")+" in "+b.newMin.m+" months";
+}
+
+function renderBlocks(){
+  const list=$("blocklist");list.innerHTML="";state.blocks.clear();
+  if(!state.spec||!DATA[state.spec]||DATA[state.spec].pending){return;}
+  DATA[state.spec].blocks.forEach((b,i)=>{
+    const row=document.createElement("label");row.className="blk";
+    row.innerHTML='<input type="checkbox" value="'+i+'">'+
+      '<div><div class="bt">'+b.name+'</div>'+
+      '<div class="bd">'+blockDesc(b)+'</div></div>';
+    row.querySelector("input").addEventListener("change",e=>{
+      if(e.target.checked)state.blocks.add(i);else state.blocks.delete(i);
+    });
+    list.appendChild(row);
+  });
+}
+
+function updateSteps(){
+  const p=PROVIDERS[state.ptype];
+  const skipSpec = p && p.step2==="none";
+  const showS2 = p && !skipSpec;
+
+  $("s2").classList.toggle("hidden", !showS2 && !!p);
+  if(!p) $("s2").classList.remove("hidden");
+  $("s2").classList.toggle("dim", !state.ptype || skipSpec);
+
+  const specReady = skipSpec
+    ? !!state.ptype && !!state.spec
+    : !!(state.spec && !(DATA[state.spec] && DATA[state.spec].pending));
+
+  $("s3").classList.toggle("dim", !specReady);
+
+  /* Training / last-12-months question: only for NEW credentialing. Hidden on recred. */
+  const trainVisible = specReady && showTrainingStep();
+  $("s4").classList.toggle("hidden", !trainVisible);
+  $("s4").classList.toggle("dim", false);
+  if(!trainVisible){
+    state.trained = "";
+    document.querySelectorAll('input[name="trained"]').forEach(x=>x.checked=false);
+  }
+
+  const step4done = specReady && state.cred && (state.cred==="recred" || state.trained);
+  $("s5").classList.toggle("dim", !step4done);
+  document.querySelectorAll('input[name="trained"]').forEach(r=>{r.disabled=false;});
+  renumberSteps();
+}
+
+function clearDownstream(){
+  state.cred="";state.trained="";state.blocks.clear();
+  document.querySelectorAll('input[name="credtype"],input[name="trained"]').forEach(x=>x.checked=false);
+  $("printbtn").innerHTML="";$("disc").style.display="none";
+}
+
+document.querySelectorAll('input[name="ptype"]').forEach(r=>r.addEventListener("change",e=>{
+  state.ptype=e.target.value;
+  state.spec="";
+  renderSpecialties();
+  const p=PROVIDERS[state.ptype];
+  if(p && p.step2==="none"){
+    state.spec=p.fixedSpec;
+    clearDownstream();
+    renderBlocks();
+  }else{
+    clearDownstream();
+    $("blocklist").innerHTML="";
+  }
+  $("results").innerHTML="";
+  updateSteps();
+}));
+
+specSel.addEventListener("change",e=>{
+  state.spec=e.target.value;clearDownstream();
+  if(state.spec && DATA[state.spec].pending){
+    $("blocklist").innerHTML="";
+    $("results").innerHTML='<div class="empty">The <b>'+DATA[state.spec].label+'</b> Delineation of Privileges form hasn’t been loaded into this tool yet.</div>';
+  }else{
+    renderBlocks();$("results").innerHTML="";
+  }
+  updateSteps();
+});
+
+document.querySelectorAll('input[name="credtype"]').forEach(r=>r.addEventListener("change",e=>{
+  state.cred=e.target.value;
+  if(state.cred==="recred"){state.trained="";document.querySelectorAll('input[name="trained"]').forEach(x=>x.checked=false);}
+  renderBlocks();updateSteps();
+}));
+document.querySelectorAll('input[name="trained"]').forEach(r=>r.addEventListener("change",e=>{
+  state.trained=e.target.value;renderBlocks();updateSteps();
+}));
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+
+function basicCredentialingItems(){
+  const dop=DOP_FORM[state.spec];
+  const clog=CASE_LOG[state.spec];
+  const sp=DATA[state.spec];
+  const dopLink = assetLink(DOP_BASE, dop, "Delineation of Privileges (DOP) Form");
+  const caseLogText = clog
+    ? assetLink(CASE_LOG_BASE, clog, "Case Log")+" (use the specialty template)"
+    : "Case Log";
+  const healthLink = assetLink(FORMS_BASE, HEALTH_ASSESSMENT, "Health Assessment");
+  const peLink = assetLink(FORMS_BASE, PHYSICAL_EXAM, "Physical Examination Form");
+
+  return [
+    "Three Professional References",
+    "Government-issued Photo ID",
+    "Proof of Board Certification",
+    "New York State Medical/PA/CRNA License Certificate",
+    "DEA Certificate",
+    "Mandated Reporter Training Certificate",
+    "Proof of Professional Liability Coverage — For Mount Sinai providers we will request a copy of your certificate from Mount Sinai",
+    healthLink+" (to be completed, dated, and signed by a licensed practitioner: MD, DO, PA, or NP)",
+    peLink,
+    "Quantiferon TB Test dated within 3 months",
+    "Immunization Records — MMR, Hep B, and Influenza",
+    dopLink,
+    caseLogText,
+    "Training Certificates if applicable (i.e. BLS, ACLS, Laser/OR Fire Safety, Fluoroscopy, & Chemo Admin)"
+  ];
+}
+
+function renderBasicCredentialingBlock(){
+  if(state.cred!=="new") return "";
+  const items = basicCredentialingItems();
+  return '<div class="rblock"><div class="rh"><span>Basic Credentialing Requirements</span><span class="rtag">New Application</span></div><div class="rbody">'+
+    '<p class="sec-t">Standard documentation for a new credentialing application</p>'+
+    '<ul class="docs">'+items.map(t=>'<li>'+t+'</li>').join("")+'</ul>'+
+    '</div></div>';
+}
+
+function requirementsFor(b){
+  const recred=state.cred==="recred";
+  const trainedYes=!recred && state.trained==="yes";
+  const dop=DOP_FORM[state.spec];
+  const clog=CASE_LOG[state.spec];
+  let docs=[];
+
+  docs.push({t:"Signed and completed "+assetLink(DOP_BASE,dop,DATA[state.spec].label+" Delineation of Privileges Form")+"."});
+  docs.push({t:"Education & training: "+b.edu});
+  if(b.cert) docs.push({t:"Board certification: "+b.cert});
+  if(b.prereq) docs.push({t:"Evidence of "+b.prereq+" — held or requested on the same application."});
+  if(b.special) docs.push({t:"Additional requirement: "+b.special});
+
+  if(b.type==="course"){
+    (recred? b.renLines : b.newLines).forEach(l=>docs.push({t:l}));
+    return {docs,tag:"Course"};
+  }
+
+  const clogText = clog
+    ? assetLink(CASE_LOG_BASE,clog,DATA[state.spec].label+" case-log template")
+    : "case log reflecting the privileges requested";
+
+  if(recred){
+    docs.push({t:"Case log required: a log of at least "+b.renMin.n+" "+b.unit+" performed within the past "+b.renMin.m+" months, reflective of the privileges requested ("+clogText+")."});
+    return {docs,tag:"Recredentialing"};
+  }
+  if(trainedYes){
+    if(state.ptype==="pa"){
+      docs.push({t:"Training alternate (from PA DOP): Successful completion of a master's degree leading to certification as a physician assistant or PA residency program in the past 12 months (satisfies the case-log requirement; no case log needed)."});
+    }else{
+      docs.push({t:"Certificate of completion of the qualifying training — "+b.trainAlt+" (satisfies the case-log requirement; no case log needed)."});
+    }
+    return {docs,tag:"New · via training"};
+  }
+  docs.push({t:"Case log required: a log of at least "+b.newMin.n+" "+b.unit+" performed within the past "+b.newMin.m+" months, reflective of the privileges requested ("+clogText+")."});
+  return {docs,tag:"New credentialing"};
+}
+
+$("genbtn").addEventListener("click",()=>{
+  const res=$("results");
+  if(!state.ptype){res.innerHTML='<div class="empty">Select a provider type first.</div>';return;}
+  if(!state.spec){
+    const p=PROVIDERS[state.ptype];
+    const msg = p && p.step2==="anesthesia_track"
+      ? "Choose Physician (MD or DO) or CRNA."
+      : "Choose a specialty first.";
+    res.innerHTML='<div class="empty">'+msg+'</div>';
+    return;
+  }
+  if(DATA[state.spec].pending){res.innerHTML='<div class="empty">The '+esc(DATA[state.spec].label)+' form isn’t loaded yet — nothing to show.</div>';return;}
+  if(!state.cred){res.innerHTML='<div class="empty">Select whether this is new credentialing or recredentialing.</div>';return;}
+  if(state.cred==="new"&&!state.trained){
+    const msg = state.ptype==="pa"
+      ? "Answer whether you completed a master's degree leading to PA certification or a PA residency program in the past 12 months."
+      : "Answer whether training was completed in the last 12 months.";
+    res.innerHTML='<div class="empty">'+msg+'</div>';
+    return;
+  }
+  if(state.blocks.size===0){res.innerHTML='<div class="empty">Select at least one privilege block.</div>';return;}
+
+  const sp=DATA[state.spec];
+  const chosen=[...state.blocks].sort((a,b)=>a-b).map(i=>sp.blocks[i]);
+  const anyClinicalNonCore=chosen.some(b=>b.prereq);
+  const coreChosen=chosen.some(b=>b.core);
+
+  let html='<div class="summary"><div class="s1">Requirements summary</div><div class="s2">'+esc(sp.label)+'</div><div class="pills">';
+  html+='<span class="pill">'+esc(PROVIDERS[state.ptype].label)+'</span>';
+  if(state.ptype==="anesthesia"){
+    html+='<span class="pill">'+esc(ANESTHESIA_OPTS[state.spec]||"")+'</span>';
+  }
+  html+='<span class="pill">'+(state.cred==="new"?"New credentialing":"Recredentialing")+'</span>';
+  if(state.cred==="new")html+='<span class="pill">Trained in last 12 mo: '+(state.trained==="yes"?"Yes":"No")+'</span>';
+  html+='<span class="pill">'+state.blocks.size+' block'+(state.blocks.size>1?'s':'')+' selected</span>';
+  html+='</div></div>';
+
+  /* Basic application checklist appears first for new credentialing only. */
+  html += renderBasicCredentialingBlock();
+
+  chosen.forEach(b=>{
+    const r=requirementsFor(b);
+    html+='<div class="rblock"><div class="rh"><span>'+esc(b.name)+'</span><span class="rtag">'+r.tag+'</span></div><div class="rbody">';
+    html+='<p class="sec-t">Privilege-specific documentation</p><ul class="docs">'+
+      r.docs.map(d=>'<li>'+d.t+'</li>').join("")+'</ul>';
+    html+='</div></div>';
+  });
+
+  if(anyClinicalNonCore&&!coreChosen){
+    html+='<div class="note">⚠️<div><b>Core privileges required.</b> One or more selected blocks are add-ons that require the specialty’s core privileges to be held or requested at the same time. Add the core block, or confirm core privileges are already granted.</div></div>';
+  }
+  html+='<p class="foot">Based on the '+esc(sp.label)+' DOP form, version '+esc(sp.version)+'. "Currently held" privileges may be renewed on the same form. Forms also permit "an equivalent as set forth in the Medical Staff Bylaws" — those alternate pathways are not shown here.</p>';
+
+  res.innerHTML=html;
+  $("printbtn").innerHTML='<div class="actions"><button class="ghost" onclick="window.print()">⎙ Print / Save as PDF</button></div>';
+  $("disc").style.display="block";
+  res.scrollIntoView({behavior:"smooth",block:"start"});
+});
+
+$("resetbtn").addEventListener("click",()=>{
+  state.ptype="";state.spec="";state.cred="";state.trained="";state.blocks.clear();
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+  renderSpecialties();
+  $("blocklist").innerHTML="";$("results").innerHTML="";$("printbtn").innerHTML="";$("disc").style.display="none";
+  updateSteps();window.scrollTo({top:0,behavior:"smooth"});
+});
+
+renderSpecialties();
+updateSteps();
+</script>
+</body>
+</html>

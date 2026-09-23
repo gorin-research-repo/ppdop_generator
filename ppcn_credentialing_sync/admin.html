@@ -226,9 +226,27 @@ const CREDENTIALING_CHECKLIST = [
 const DOCUMENT_LOG = [
   {
     date: "September 23, 2026",
-    time: "10:28 AM EDT",
+    time: "10:54 AM EDT",
     document: "Anesthesiology — Physician DOP, case log, and privileging guide (September 23, 2026)",
-    change: "Replaced the May 18, 2026 Anesthesiology (Physician) DOP with Anesthesia_Physician_Sept_23_2026.pdf and the July 8, 2026 physician case-log template with ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_Sept_23_2026.xlsx. Age-based privileges on the DOP were restructured: removed the prior “2 months of age and older” / “&lt;2 months of age” split and the Adult (18+) vs Pediatric (2 months–17 years) website blocks; the form and guide now use three age bands — (1) 2 months to less than 24 months (Additional Requirements: ACGME-/AOA-accredited pediatric anesthesiology fellowship or Medical Staff Bylaws equivalent, AND current PALS), (2) 2 years to less than 13 years (Additional Requirement: current PALS only), and (3) 13 years of age and older (no age-specific additional requirements beyond core anesthesiology education, ABA/AOBA certification with ACLS and/or PeRLS, and the 50/12 and 150/36 encounter volume rules). Pediatric anesthesiology board certification is no longer listed as a separate website requirement for the youngest band. The case-log workbook was simplified from separate Adult Anesthesia and Pediatric Anesthesia sheets to a single Cases sheet (Patient Age remains a column so age-band activity can still be documented). Updated FILE_GROUPS and DOCUMENT_LOG on this Admin page, and updated DOP_FORM, CASE_LOG, and DATA.anesthesia_physician on index.html so downloads and the interactive requirements summary match the new documents."
+    change: "Replaced dops/Anesthesia_Physician_September_21_2026.pdf with dops/Anesthesia_Physician_Sept_23_2026.pdf and case-logs/ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_July_8_2026.xlsx with case-logs/ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_Sept_23_2026.xlsx (old files removed). Age privileges on the DOP and guide are now three bands: (1) 2 months to less than 24 months — Additional Requirements: ACGME-/AOA pediatric anesthesiology fellowship or Bylaws equivalent, AND current PALS; (2) 2 years to less than 13 years — Additional Requirement: current PALS only; (3) 13 years of age and older — no age-specific additional requirements beyond core anesthesiology education, ABA/AOBA certification with ACLS and/or PeRLS, and the 50/12 and 150/36 encounter volume rules. The prior “2 months and older” / “patients of any age” (pediatric board + PALS) website blocks were removed. The case-log workbook uses a single Cases sheet with a Patient Age column instead of separate Adult/Pediatric sheets. Updated FILE_GROUPS on this Admin page and DOP_FORM / CASE_LOG / DATA.anesthesia_physician on index.html."
+  },
+  {
+    date: "September 21, 2026",
+    time: "10:50 AM EDT",
+    document: "Anesthesia — Physician DOP (September 21, 2026)",
+    change: "Collapsed the physician anesthesiology DOP to a single Anesthesiology privilege grid. Age is requested as two lines on that grid: provide anesthesia care for patients 2 months of age and older, and provide anesthesia care for patients of any age. Additional certification (current pediatric anesthesiology certification and PALS) is listed under the any-age line. The separate pediatric grid was removed. The privileging guide and physician case-log sheet titles were updated to match."
+  },
+  {
+    date: "September 21, 2026",
+    time: "10:30 AM EDT",
+    document: "Anesthesia — Physician DOP (September 21, 2026)",
+    change: "Restructured the physician anesthesiology DOP so core privileges are a single section for patients 2 years of age and older, with grantable age bands of 2 to 12 years, 13 to 17 years, and 18 years and older (the same pattern as other specialty DOPs). A separate section covers patients 2 months to 2 years of age; the form now states that the extra requirements (pediatric anesthesiology fellowship and current PALS) apply only to that age group. The privileging guide, physician case-log sheet titles, and this log were updated to match."
+  },
+  {
+    date: "September 21, 2026",
+    time: "10:15 AM EDT",
+    document: "Anesthesia — Physician DOP (September 21, 2026)",
+    change: "Corrected the physician anesthesiology Delineation of Privileges age ranges. Core privileges now cover patients 2 years of age and older (replacing “Adult Anesthesiology (18 years or older)”). Pediatric anesthesiology privileges now cover patients 2 months of age and older (replacing “2 months to 17 years”) and continue to require a pediatric anesthesiology fellowship and current PALS. The privileging guide privilege-block names, the downloadable physician DOP PDF, and the physician case-log sheet titles were updated to match."
   },
   {
     date: "August 13, 2026",

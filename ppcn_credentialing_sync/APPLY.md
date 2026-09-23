@@ -1,20 +1,25 @@
-# Apply to `ppcn_credentialing`
+# Apply to `ppcn_credentialing` (required)
 
-This Cloud Agent environment can push only to `ppdop_generator`. The privileging website, admin change log, DOP PDFs, and case-log templates live in [`gorin-research-repo/ppcn_credentialing`](https://github.com/gorin-research-repo/ppcn_credentialing).
+These files must land in **https://github.com/gorin-research-repo/ppcn_credentialing** — that is where `dops/` and `case-logs/` live. The Cloud Agent on `ppdop_generator` cannot push there (403).
 
-Copy these files into that repository (branch suggested: `cursor/anesthesia-age-bands-aeac`):
+## File changes
 
-| This folder | Destination in `ppcn_credentialing` |
-|-------------|--------------------------------------|
-| `index.html` | `index.html` |
-| `admin.html` | `admin.html` |
-| `dops/Anesthesia_Physician_Sept_23_2026.pdf` | `dops/Anesthesia_Physician_Sept_23_2026.pdf` |
-| `case-logs/ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_Sept_23_2026.xlsx` | same path |
-| `Anesthesia_MD.txt` | optional source archive (generator uses `privileges_anesthesiology.txt` in `ppdop_generator`) |
+| Action | Path |
+|--------|------|
+| **Delete** | `dops/Anesthesia_Physician_September_21_2026.pdf` |
+| **Add** | `dops/Anesthesia_Physician_Sept_23_2026.pdf` |
+| **Delete** | `case-logs/ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_July_8_2026.xlsx` |
+| **Add** | `case-logs/ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_Sept_23_2026.xlsx` |
+| **Replace** | `index.html` (three age-band blocks + new filenames) |
+| **Replace** | `admin.html` (catalog + document change log) |
 
-Then remove the superseded files:
+## Fast path
 
-- `dops/Anesthesia_Physician_May_18_2026_FINAL.pdf`
-- `case-logs/ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_July_8_2026.xlsx`
-
-A local commit with these changes already exists at `/tmp/ppcn_credentialing` on branch `cursor/anesthesia-age-bands-aeac` (commit `a211f64`) and can be pushed once write access is available.
+```bash
+cd /path/to/ppcn_credentialing
+git checkout -b cursor/anesthesia-sept23-docs-aeac
+git apply /path/to/ppdop_generator/ppcn_credentialing_sync/ppcn_credentialing.patch
+git add -A && git commit -m "Replace Anesthesia Physician DOP and case log with Sept 23, 2026"
+git push -u origin HEAD
+gh pr create --base main --title "Replace Anesthesia Physician DOP and case log (Sept 23, 2026)" --body "Deletes Sept 21 DOP and July 8 physician case log; adds Sept 23 files; updates guide age bands and admin log."
+```

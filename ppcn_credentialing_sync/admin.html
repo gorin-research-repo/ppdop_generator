@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — PeakPoint Central Nassau Surgery Center</title>
+<style>
+  :root{
+    --green:#268b6b; --green-d:#1c6b52; --slate:#495566; --slate-l:#5a6678;
+    --ink:#1f2733; --muted:#6b7684; --line:#e2e7ee; --bg:#f4f6f9;
+    --card:#ffffff; --amber:#b7791f; --amber-bg:#fdf6e7;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--green-d);text-decoration:none;border-bottom:1px solid rgba(38,139,107,.4)}
+  a:hover{border-bottom-color:var(--green-d)}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px 24px}
+  header{background:var(--card);border-bottom:1px solid var(--line)}
+  .head-inner{max-width:900px;margin:0 auto;padding:28px 20px;display:flex;align-items:center;justify-content:center}
+  .logo{display:flex;align-items:center;justify-content:center}
+  .logo img{height:88px;width:auto;display:block}
+  @media(max-width:560px){.logo img{height:64px}}
+  h1{font-size:20px;margin:26px 0 4px;font-weight:700}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+  .jump{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+  .jump a{background:#fff;border:1px solid #cdd5e0;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--slate);border-bottom:1px solid #cdd5e0}
+  .jump a:hover{border-color:var(--green);color:var(--green-d)}
+  h2{font-size:16px;margin:28px 0 10px;font-weight:700}
+  h2 .h2sub{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-top:3px}
+  .prov{margin:22px 0 8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .rblock{background:var(--card);border:1px solid var(--line);border-radius:13px;margin-bottom:14px;overflow:hidden}
+  .rblock>.rh{background:var(--green);color:#fff;padding:12px 18px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .rh .rtag{background:rgba(255,255,255,.2);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;flex:none}
+  .rbody{padding:4px 0}
+  table.files{width:100%;border-collapse:collapse;table-layout:fixed}
+  table.files th,table.files td{padding:11px 18px;font-size:13.5px;border-bottom:1px solid #f0f2f6;vertical-align:middle;text-align:left}
+  /* Widths must total 100%: table-layout is fixed and .rblock clips overflow. */
+  table.files th:nth-child(1),table.files td:nth-child(1){width:46%}
+  table.files th.type-col,table.files td.type-col{width:10%;text-align:center}
+  table.files th.ver-col,table.files td.ver-col{width:24%;text-align:center}
+  /* Wide enough that the button never outgrows the cell and eats its padding. */
+  table.files th.dl-col,table.files td.dl-col{width:20%;text-align:center;white-space:nowrap;padding-left:14px;padding-right:18px}
+  table.files th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:#fafbfc}
+  table.files tr:last-child td{border-bottom:none}
+  table.files .fname{font-weight:600}
+  table.files .fname .fn{display:block;font-weight:500;font-size:12px;color:var(--muted);margin-top:2px;word-break:break-all}
+  .kind{display:inline-block;background:#eef4fb;color:var(--slate);border-radius:5px;padding:2px 7px;font-size:11px;font-weight:700;letter-spacing:.03em}
+  a.dl{display:inline-block;min-width:92px;text-align:center;background:var(--green);color:#fff;border-radius:7px;padding:6px 12px;font-size:12.5px;font-weight:700;border-bottom:none;box-sizing:border-box}
+  a.dl:hover{background:var(--green-d);border-bottom:none;color:#fff}
+  ul.docs{list-style:none;margin:0;padding:12px 18px 16px}
+  ul.docs li{position:relative;padding:8px 0 8px 26px;font-size:14px;border-bottom:1px solid #f0f2f6}
+  ul.docs li:last-child{border-bottom:none}
+  ul.docs li:before{content:"";position:absolute;left:2px;top:11px;width:15px;height:15px;border:2px solid var(--green);border-radius:4px}
+  .note{background:var(--amber-bg);border:1px solid #f0e0b8;border-radius:9px;padding:12px 14px;font-size:13px;color:#7a5a12;margin:0 0 14px}
+  .note ol{margin:8px 0 0;padding-left:18px}
+  .note li{margin:4px 0}
+  table.log{width:100%;border-collapse:collapse}
+  table.log th,table.log td{text-align:left;padding:12px 18px;font-size:13.5px;border-bottom:1px solid #f0f2f6;vertical-align:top}
+  table.log th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:#fafbfc}
+  table.log tr:last-child td{border-bottom:none}
+  table.log .when{white-space:nowrap;font-weight:600;color:var(--slate);font-size:13px}
+  table.log .when .tz{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+  table.log .doc{font-weight:600}
+  .site-footer{background:var(--card);border-top:1px solid var(--line)}
+  .site-footer .foot-inner{max-width:900px;margin:0 auto;padding:14px 20px;text-align:center;font-size:12.5px;color:var(--muted)}
+  .site-footer .handle{font-weight:600;color:var(--slate)}
+  .site-footer .foot-sep{color:#c5ccd6}
+  .site-footer a.foot-link{color:var(--slate);font-weight:600;border-bottom-color:rgba(73,85,102,.35)}
+  .site-footer a.foot-link:hover{color:var(--green-d);border-bottom-color:var(--green-d)}
+  @media(max-width:640px){
+    table.files th.type-col,table.files td.type-col{display:none}
+    table.files th:nth-child(1),table.files td:nth-child(1){width:44%}
+    table.files th.ver-col,table.files td.ver-col{width:26%}
+    table.files th.dl-col,table.files td.dl-col{width:30%;padding-left:10px;padding-right:12px}
+    a.dl{min-width:86px;padding:6px 10px}
+    table.log .when{white-space:normal}
+  }
+  @media print{
+    header,.jump,.site-footer,.note{display:none!important}
+    body{background:#fff}
+    a.dl{color:#000;background:none;padding:0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <div class="logo">
+      <a href="index.html" style="border-bottom:none"><img src="assets/logo.png" alt="PeakPoint Central Nassau Surgery Center"></a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>Admin</h1>
+  <p class="sub">Current working files for download, the standard credentialing checklist, and the document version log. This page is for Medical Staff Services / credentialing administration.</p>
+
+  <nav class="jump">
+    <a href="#files">Working files</a>
+    <a href="#checklist">Credentialing checklist</a>
+    <a href="#log">Document change log</a>
+  </nav>
+
+  <h2 id="files">Working files by specialty / provider type</h2>
+  <p class="sub" style="margin-top:0">Each specialty lists the current Delineation of Privileges (DOP) form and case-log template. General health forms used by every provider are listed first.</p>
+  <div id="filelist"></div>
+
+  <h2 id="checklist">Basic credentialing requirements</h2>
+  <p class="sub" style="margin-top:0">Standard documentation for a new credentialing application. The DOP form and case log are specialty-specific — use the current files in the list above.</p>
+  <div class="rblock">
+    <div class="rh"><span>New application checklist</span><span class="rtag">All providers</span></div>
+    <ul class="docs" id="checklistitems"></ul>
+  </div>
+
+  <h2 id="log">Document change log</h2>
+  <p class="sub" style="margin-top:0">Record of when documents on this site were added or had their version date updated, and what changed.</p>
+  <div class="note">
+    <b>Keep this log current.</b> Whenever the version date of any document on the site is updated, add a new entry at the top of <code>DOCUMENT_LOG</code> in this page (and update the matching file row above). Include:
+    <ol>
+      <li>The date and time of the change (use Eastern Time).</li>
+      <li>The document name and new version date.</li>
+      <li>A detailed description of what changed — not only “updated,” but the substance (for example, a new template was added, a filename was corrected, or a requirement on the form changed).</li>
+    </ol>
+  </div>
+  <div class="rblock">
+    <div class="rh"><span>Version history</span><span class="rtag">Newest first</span></div>
+    <div id="logtable"></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="foot-inner">
+    <span class="handle">@michael_Gorin</span><span class="foot-sep"> / </span><a class="foot-link" href="https://augmentedmd.tools">@augmentedMD</a><span class="foot-sep"> / </span><a class="foot-link" href="admin.html">Admin</a>
+  </div>
+</footer>
+
+<script>
+/* ──────────────────────────────────────────────────────────────────────────
+   ADMIN FILE CATALOG
+   When replacing a DOP, case-log template, or general form:
+     1. Put the new file in dops/, case-logs/, or forms/
+     2. Update the matching path / version below AND in index.html
+        (DOP_FORM, CASE_LOG, DATA[spec].version)
+     3. Add a DOCUMENT_LOG entry at the top of the array
+   ────────────────────────────────────────────────────────────────────────── */
+
+const GENERAL_FILES = [
+  {
+    name: "Annual Health Assessment",
+    file: "forms/Annual_Health_Assessment.pdf",
+    kind: "PDF",
+    version: "Current working copy (on site since August 7, 2026)"
+  },
+  {
+    name: "Physical Examination Form",
+    file: "forms/Physical_Examination_Form.pdf",
+    kind: "PDF",
+    version: "Current working copy (on site since August 7, 2026)"
+  }
+];
+
+const FILE_GROUPS = [
+  {
+    provider: "Surgeon",
+    specialties: [
+      { label:"General Surgery", dopVersion:"May 6, 2026", dop:"dops/Gen_Surg_May_6_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/GENERAL_SURGERY_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Gastroenterology", dopVersion:"May 20, 2026", dop:"dops/GI_May_20_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/GI_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Gynecology", dopVersion:"May 6, 2026", dop:"dops/Gyn_May_6_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/GYNECOLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Otolaryngology", dopVersion:"May 6, 2026", dop:"dops/ENT_May_6_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/OTOLARYNGOLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Orthopedic Surgery", dopVersion:"May 6, 2026", dop:"dops/Ortho_May_6_2026.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/ORTHOPEDICS_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Ophthalmology", dopVersion:"May 6, 2026", dop:"dops/Optho_May_6_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/OPHTHALMOLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Plastic Surgery", dopVersion:"May 6, 2026", dop:"dops/Plastic_Surgery_May_6_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/PLASTIC_SURGERY_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Podiatry", dopVersion:"April 30, 2026", dop:"dops/Podiatry_April_30_2026.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/PODIATRY_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Urology", dopVersion:"May 6, 2026", dop:"dops/Urology_May_6_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/UROLOGY_CASE_LOG_TEMPLATE_July_8_2026.xlsx" },
+      { label:"Pain Medicine", dopVersion:"May 6, 2026", dop:"dops/Pain_Medicine_May_6_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/PAIN_MEDICINE_CASE_LOG_TEMPLATE_July_8_2026.xlsx" }
+    ]
+  },
+  {
+    provider: "Physician Assistant",
+    specialties: [
+      { label:"Physician Assistant", dopVersion:"August 4, 2026", dop:"dops/PA_Aug_4_2026.pdf",
+        caseLogVersion:"August 13, 2026", caseLog:"case-logs/PA_CASE_LOG_TEMPLATE_August_13_2026.xlsx" }
+    ]
+  },
+  {
+    provider: "Anesthesia Provider",
+    specialties: [
+      { label:"Physician (MD or DO)", dopVersion:"September 23, 2026", dop:"dops/Anesthesia_Physician_Sept_23_2026.pdf",
+        caseLogVersion:"September 23, 2026", caseLog:"case-logs/ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_Sept_23_2026.xlsx" },
+      { label:"CRNA", dopVersion:"May 18, 2026", dop:"dops/Anesthesia_CRNA_May_18_2026_FINAL.pdf",
+        caseLogVersion:"July 8, 2026", caseLog:"case-logs/ANESTHESIA_(CRNA)_CASE_LOG_TEMPLATE_July_8_2026.xlsx" }
+    ]
+  }
+];
+
+const CREDENTIALING_CHECKLIST = [
+  "Three Professional References",
+  "Government-issued Photo ID",
+  "Proof of Board Certification",
+  "New York State Medical/PA/CRNA License Certificate",
+  "DEA Certificate",
+  "Mandated Reporter Training Certificate",
+  "Proof of Professional Liability Coverage — For Mount Sinai providers we will request a copy of your certificate from Mount Sinai",
+  "Health Assessment (to be completed, dated, and signed by a licensed practitioner: MD, DO, PA, or NP) — download from General forms above",
+  "Physical Examination Form — download from General forms above",
+  "Quantiferon TB Test dated within 3 months",
+  "Immunization Records — MMR, Hep B, and Influenza",
+  "Delineation of Privileges (DOP) Form — use the current specialty / provider-type form above",
+  "Case Log (use the specialty template above)",
+  "Training Certificates if applicable (i.e. BLS, ACLS, Laser/OR Fire Safety, Fluoroscopy, & Chemo Admin)"
+];
+
+/* Newest first. Add new entries at the top. */
+const DOCUMENT_LOG = [
+  {
+    date: "September 23, 2026",
+    time: "10:28 AM EDT",
+    document: "Anesthesiology — Physician DOP, case log, and privileging guide (September 23, 2026)",
+    change: "Replaced the May 18, 2026 Anesthesiology (Physician) DOP with Anesthesia_Physician_Sept_23_2026.pdf and the July 8, 2026 physician case-log template with ANESTHESIA_(PHYSICIAN)_CASE_LOG_TEMPLATE_Sept_23_2026.xlsx. Age-based privileges on the DOP were restructured: removed the prior “2 months of age and older” / “&lt;2 months of age” split and the Adult (18+) vs Pediatric (2 months–17 years) website blocks; the form and guide now use three age bands — (1) 2 months to less than 24 months (Additional Requirements: ACGME-/AOA-accredited pediatric anesthesiology fellowship or Medical Staff Bylaws equivalent, AND current PALS), (2) 2 years to less than 13 years (Additional Requirement: current PALS only), and (3) 13 years of age and older (no age-specific additional requirements beyond core anesthesiology education, ABA/AOBA certification with ACLS and/or PeRLS, and the 50/12 and 150/36 encounter volume rules). Pediatric anesthesiology board certification is no longer listed as a separate website requirement for the youngest band. The case-log workbook was simplified from separate Adult Anesthesia and Pediatric Anesthesia sheets to a single Cases sheet (Patient Age remains a column so age-band activity can still be documented). Updated FILE_GROUPS and DOCUMENT_LOG on this Admin page, and updated DOP_FORM, CASE_LOG, and DATA.anesthesia_physician on index.html so downloads and the interactive requirements summary match the new documents."
+  },
+  {
+    date: "August 13, 2026",
+    time: "9:20 AM EDT",
+    document: "Admin page (this page)",
+    change: "Fixed the working-files table layout. The download column carried a 220px minimum width, which forced each table wider than its card; because the card hides overflow, the column’s right padding was cut off and the Download buttons sat flush against the card edge — earlier padding increases (28px, then 70px, then 120px) were clipped away and had no visible effect. Removed the minimum width, set the column widths to total 100% (document 46%, type 10%, version date 24%, download 20%), and centered the buttons with ordinary padding, so every Download button now has consistent clearance from the table edge at all screen widths. The wider document column also keeps long case-log filenames on a single line."
+  },
+  {
+    date: "August 13, 2026",
+    time: "7:30 AM EDT",
+    document: "Admin page (this page)",
+    change: "Added an Admin page, linked from the site footer, listing every current working file with a download link (organized by specialty / provider type), the general forms (Annual Health Assessment and Physical Examination Form), the basic credentialing-requirements checklist, and this document change log."
+  },
+  {
+    date: "August 13, 2026",
+    time: "6:47 AM EDT",
+    document: "PA Case Log Template (August 13, 2026)",
+    change: "Linked the Physician Assistant case-log template on the privileging guide (PR #4, merged 6:47 AM EDT). The PA provider type had been the only one without a downloadable case-log file: CASE_LOG.pa was still null after the Excel file was uploaded. The guide now points to PA_CASE_LOG_TEMPLATE_August_13_2026.xlsx, so PA new-credentialing and recredentialing flows show a working download in both the Basic Credentialing Requirements list and the privilege-specific requirements. The uploaded filename’s “ - Copy” Windows artifact was also removed so the public download name matches the other specialty templates."
+  },
+  {
+    date: "August 13, 2026",
+    time: "6:42 AM EDT",
+    document: "PA Case Log Template (August 13, 2026)",
+    change: "Uploaded the Physician Assistant case-log Excel template to case-logs/ (version date August 13, 2026). This is the first PA-specific case-log file on the site; all other specialties already had July 8, 2026 templates from the initial publication."
+  },
+  {
+    date: "August 7, 2026",
+    time: "11:21 AM EDT",
+    document: "Site layout (footer)",
+    change: "Tightened spacing above the page footer (PR #2) so the tool-attribution credit sits closer to the content and stays in view without a large empty gap."
+  },
+  {
+    date: "August 7, 2026",
+    time: "11:10 AM EDT",
+    document: "Site layout (footer)",
+    change: "Added the tool-attribution footer: “Tool by @michael_gorin / @AugmentedMD” (PR #1)."
+  },
+  {
+    date: "August 7, 2026",
+    time: "8:13 AM EDT",
+    document: "Site layout (header)",
+    change: "Centered and enlarged the PeakPoint Central Nassau Surgery Center logo in the page header."
+  },
+  {
+    date: "August 7, 2026",
+    time: "8:00 AM EDT",
+    document: "Initial site publication — all then-current working files",
+    change: "Published the Clinical Privileging Requirements Guide with downloadable current working files: Delineation of Privileges PDFs for General Surgery, Gastroenterology (May 20, 2026), Gynecology, Otolaryngology, Orthopedic Surgery, Ophthalmology, Plastic Surgery, Podiatry (April 30, 2026), Urology, Pain Medicine, Physician Assistant (August 4, 2026), Anesthesia — Physician, and Anesthesia — CRNA (May 18, 2026); case-log Excel templates dated July 8, 2026 for every specialty except Physician Assistant (none yet); and the general Annual Health Assessment and Physical Examination Form. Most surgical DOPs are the May 6, 2026 finals."
+  }
+];
+
+function fileName(path){
+  return decodeURIComponent(path.split("/").pop());
+}
+
+function downloadCell(path){
+  const name = fileName(path);
+  return '<a class="dl" href="'+encodeURI(path)+'" download="'+name+'">Download</a>';
+}
+
+function fileRow(item){
+  return '<tr>'+
+    '<td class="fname">'+item.name+'<span class="fn">'+fileName(item.file)+'</span></td>'+
+    '<td class="type-col"><span class="kind">'+item.kind+'</span></td>'+
+    '<td class="ver-col">'+item.version+'</td>'+
+    '<td class="dl-col">'+downloadCell(item.file)+'</td>'+
+    '</tr>';
+}
+
+function specRows(spec){
+  const rows = [
+    { name:"Delineation of Privileges (DOP) Form", file:spec.dop, kind:"PDF", version:spec.dopVersion },
+    { name:"Case Log Template", file:spec.caseLog, kind:"Excel", version:spec.caseLogVersion }
+  ];
+  return rows.map(fileRow).join("");
+}
+
+function tableHead(){
+  return '<table class="files"><thead><tr><th>Document</th><th class="type-col">Type</th><th class="ver-col">Version date</th><th class="dl-col"></th></tr></thead><tbody>';
+}
+
+function renderFiles(){
+  const host = document.getElementById("filelist");
+  let html = '<p class="prov">General forms — all providers</p>';
+  html += '<div class="rblock"><div class="rh"><span>Health &amp; physical exam</span><span class="rtag">All applications</span></div>';
+  html += tableHead() + GENERAL_FILES.map(fileRow).join("") + '</tbody></table></div>';
+
+  FILE_GROUPS.forEach(group=>{
+    html += '<p class="prov">'+group.provider+'</p>';
+    group.specialties.forEach(spec=>{
+      html += '<div class="rblock"><div class="rh"><span>'+spec.label+'</span><span class="rtag">'+group.provider+'</span></div>';
+      html += tableHead() + specRows(spec) + '</tbody></table></div>';
+    });
+  });
+  host.innerHTML = html;
+}
+
+function renderChecklist(){
+  document.getElementById("checklistitems").innerHTML =
+    CREDENTIALING_CHECKLIST.map(t=>'<li>'+t+'</li>').join("");
+}
+
+function renderLog(){
+  let html = '<table class="log"><thead><tr><th>Date / time</th><th>Document</th><th>Change</th></tr></thead><tbody>';
+  DOCUMENT_LOG.forEach(e=>{
+    html += '<tr>'+
+      '<td class="when">'+e.date+'<span class="tz">'+e.time+'</span></td>'+
+      '<td class="doc">'+e.document+'</td>'+
+      '<td>'+e.change+'</td>'+
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById("logtable").innerHTML = html;
+}
+
+renderFiles();
+renderChecklist();
+renderLog();
+</script>
+</body>
+</html>

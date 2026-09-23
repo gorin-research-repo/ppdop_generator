@@ -1,0 +1,40 @@
+# Peakpoint Central Nassau Surgery Center — Anesthesiology (Physician) DOP source
+SPECIALTY: Anesthesiology (Physician)
+VERSION: September 23, 2026
+
+SECTION: Anesthesiology
+QUALIFICATIONS
+Education and Training: Successful completion of an Accreditation Council for Graduate Medical Education (ACGME)- or American Osteopathic Association (AOA)-accredited residency in anesthesiology;
+<Blank>
+OR An equivalent as set forth in the Medical Staff Bylaws.
+Certification: Current certification or board eligible with achievement of certification within 5 years of completing formal training in Anesthesiology by the American Board of Anesthesiology or the American Osteopathic Board of Anesthesiology;
+<Blank>
+OR An equivalent as set forth in the Medical Staff Bylaws.
+<Blank>
+AND Current certification in Advanced Cardiovascular Life Support (ACLS) by the American Heart Association;
+<Blank>
+AND/OR Current certification in Perioperative Resuscitation and Life Support (PeRLS) by the American Society of Anesthesiology.
+<Blank>
+Maintenance of Certification is required unless a provider is legacy (grandfathered) as set forth in the Medical Staff Bylaws.
+New Privilege: Demonstrated current competence with evidence of at least 50 anesthesia encounters within the past 12 months that are reflective of the scope of privileges requested.
+<Blank>
+OR Successful completion of an ACGME- or AOA-accredited residency, or fellowship training, within the past 12 months.
+Renewal of Privilege: Demonstrated current competence with evidence of at least 150 anesthesia encounters within the past 36 months that are reflective of the scope of privileges requested.
+PRIVILEGES:
+Provide anesthesia care to patients 2 months to less than 24 months of age.
+Additional Requirements:
+Successful completion of an ACGME- or AOA-accredited fellowship in pediatric anesthesiology;
+<Blank>
+OR An equivalent as set forth in the Medical Staff Bylaws.
+<Blank>
+AND Current certification in Pediatric Advanced Life Support (PALS) by The American Heart Association.
+Provide anesthesia care to patients 2 years to less than 13 years of age.
+Additional Requirements:
+Current certification in Pediatric Advanced Life Support (PALS) by The American Heart Association.
+Provide anesthesia care to patients 13 years of age and older.
+Preoperative evaluation including medical history, physical examination, risk assessment and perioperative planning.
+Supervise Certified Registered Nurse Anesthetists (CRNAs).
+Administration of monitored anesthesia care, general, neuraxial and regional anesthesia. This includes techniques utilizing intravenous medications, volatile agents, spinal, epidural and peripheral nerve blocks, alone, or in combination.
+Monitoring and maintenance of acceptable physiologic parameters during the perioperative period including optimization of neurologic, cardiac, respiratory, hematologic and renal function.
+Performance of invasive monitoring techniques including arterial, central venous access procedures.
+Use of ultrasound and echocardiography including point-of-care ultrasound as clinically indicated including their use for performance of regional anesthesia, assessment of cardiac and respiratory status, and abdominal examination.
